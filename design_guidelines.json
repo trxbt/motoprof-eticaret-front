@@ -1,0 +1,110 @@
+{
+  "theme": "dark",
+  "archetype": "Performance Pro (Industrial Garage Variant)",
+  "colors": {
+    "primary": "#f97316",
+    "primary_hover": "#ea580c",
+    "background_base": "#0a0a0a",
+    "background_surface": "#171717",
+    "background_elevated": "#262626",
+    "text_primary": "#ffffff",
+    "text_secondary": "#a3a3a3",
+    "border": "#3f3f46",
+    "accent_success": "#22c55e",
+    "accent_warning": "#eab308",
+    "accent_danger": "#ef4444"
+  },
+  "typography": {
+    "font_family": {
+      "heading": "'Chivo', sans-serif",
+      "body": "'IBM Plex Sans', sans-serif",
+      "mono": "'IBM Plex Mono', monospace"
+    },
+    "scale": {
+      "h1": "text-4xl sm:text-5xl lg:text-6xl tracking-tight font-black",
+      "h2": "text-2xl sm:text-3xl lg:text-4xl tracking-tight font-bold",
+      "h3": "text-xl sm:text-2xl tracking-tight font-bold",
+      "h4": "text-lg sm:text-xl font-semibold",
+      "body": "text-base leading-relaxed text-neutral-300",
+      "small": "text-sm text-neutral-400",
+      "label": "text-xs uppercase tracking-[0.2em] font-semibold text-neutral-400"
+    }
+  },
+  "spacing_and_layout": {
+    "philosophy": "Generous spacing. Dark themes need negative space to avoid feeling cluttered. Mobile-first focus.",
+    "container_padding": "px-4 sm:px-6 lg:px-8",
+    "section_spacing": "py-16 sm:py-24",
+    "grid_bento": "grid-cols-1 md:grid-cols-12 gap-6"
+  },
+  "surface_strategies": {
+    "cards": "background_surface (#171717) with 1px solid border (#3f3f46). Subtle inner shadow. No blur.",
+    "header": "Solid #0a0a0a or #000000 with border-b (#3f3f46). Needs to be fixed z-50.",
+    "hover_states": "-translate-y-1 with shadow-lg shadow-orange-500/10 border-orange-500/50"
+  },
+  "components": {
+    "hero_slider": "Full width, max height 80vh. Overlay bg-black/60 so search text is legible. Slider contains background image.",
+    "search_engine": "Bento style. 3 select dropdowns (Marka, Model, Yil) + 1 Search Button. Should be an elevated card overlapping the hero section or directly inside it.",
+    "buttons": "Primary buttons: bg-orange-500 text-white font-bold uppercase tracking-wider hover:bg-orange-600. Secondary: bg-transparent border border-neutral-700 hover:border-neutral-500 text-white.",
+    "product_card": "Vertical layout. Image container max-h-48. Title truncate 2 lines. Price in primary color. Add to Cart button full width at bottom.",
+    "inputs": "bg-neutral-900 border-neutral-700 text-white focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-md."
+  },
+  "motion": {
+    "hover": "transition-all duration-200 ease-in-out",
+    "page_load": "framer-motion staggered fade-in for lists and grids",
+    "micro_interactions": "scale-95 on button active state"
+  },
+  "image_urls": {
+    "hero_backgrounds": [
+      {
+        "url": "https://images.unsplash.com/photo-1572283046480-e990be92d301?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjY2NzV8MHwxfHNlYXJjaHwxfHxtb3RvcmN5Y2xlJTIwbWVjaGFuaWMlMjBnYXJhZ2UlMjBkYXJrfGVufDB8fHx8MTc4MTM4MzI5MHww&ixlib=rb-4.1.0&q=85",
+        "description": "Dark mechanic garage",
+        "category": "hero"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1687265769434-6930a0dc08ef?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMzN8MHwxfHNlYXJjaHwxfHxob25kYSUyMHlhbWFoYSUyMG1vdG9yY3ljbGUlMjBzdHVkaW98ZW58MHx8fHwxNzgxMzgzMjkwfDA&ixlib=rb-4.1.0&q=85",
+        "description": "Motorcycle parked",
+        "category": "hero"
+      }
+    ],
+    "categories": [
+      {
+        "url": "https://images.unsplash.com/photo-1741295017671-c0a4be2db1af?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMzN8MHwxfHNlYXJjaHwyfHxob25kYSUyMHlhbWFoYSUyMG1vdG9yY3ljbGUlMjBzdHVkaW98ZW58MHx8fHwxNzgxMzgzMjkwfDA&ixlib=rb-4.1.0&q=85",
+        "description": "Motorcycle Showroom - Category Representation",
+        "category": "category_honda"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1659023408350-ab0624a70482?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMzN8MHwxfHNlYXJjaHwzfHxob25kYSUyMHlhbWFoYSUyMG1vdG9yY3ljbGUlMjBzdHVkaW98ZW58MHx8fHwxNzgxMzgzMjkwfDA&ixlib=rb-4.1.0&q=85",
+        "description": "Motorcycles dirt road - Category Representation",
+        "category": "category_yamaha"
+      }
+    ],
+    "products": [
+      {
+        "url": "https://images.unsplash.com/photo-1534755563369-ad37931ac77b?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTJ8MHwxfHNlYXJjaHwzfHxtb3RvcmN5Y2xlJTIwZW5naW5lJTIwc3BhcmUlMjBwYXJ0c3xlbnwwfHx8fDE3ODEzODMyOTB8MA&ixlib=rb-4.1.0&q=85",
+        "description": "Engine parts",
+        "category": "product_engine"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTJ8MHwxfHNlYXJjaHwyfHxtb3RvcmN5Y2xlJTIwZW5naW5lJTIwc3BhcmUlMjBwYXJ0c3xlbnwwfHx8fDE3ODEzODMyOTB8MA&ixlib=rb-4.1.0&q=85",
+        "description": "Chain and sprocket",
+        "category": "product_chain"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1429772011165-0c2e054367b8?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTJ8MHwxfHNlYXJjaHwxfHxtb3RvcmN5Y2xlJTIwZW5naW5lJTIwc3BhcmUlMjBwYXJ0c3xlbnwwfHx8fDE3ODEzODMyOTB8MA&ixlib=rb-4.1.0&q=85",
+        "description": "Engine bay",
+        "category": "product_brakes"
+      }
+    ]
+  },
+  "instructions_to_main_agent": [
+    "You are building an e-commerce platform for motorcycle parts named MotoProf.",
+    "The application must be heavily themed as a dark 'industrial/garage' app targeting mechanics and motorcycle owners.",
+    "Use Phosphor Icons (@phosphor-icons/react) with a 'duotone' or 'bold' weight to match the mechanical feel.",
+    "Ensure all HTML elements mapped to interactive events include a data-testid attribute.",
+    "The search engine (Marka/Model/Yil) is the core feature and must be placed prominently on the homepage, likely overlaid on the hero slider.",
+    "Use Shadcn UI components for complex interactive pieces (like the dropdowns for the search engine) but stylize them heavily using Tailwind to match the dark theme.",
+    "Import Google Fonts 'Chivo' and 'IBM Plex Sans' in your index.css or via layout.",
+    "Use the provided image URLs as actual placeholders for your UI.",
+    "Language must be Turkish (e.g., 'Sepete Ekle' instead of 'Add to Cart', 'Giriş Yap' instead of 'Login')."
+  ]
+}
