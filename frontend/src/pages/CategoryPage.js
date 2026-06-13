@@ -76,11 +76,11 @@ const CategoryPage = () => {
   const FilterSidebar = () => (
     <div className="space-y-6">
       <div>
-        <h3 className="text-xs font-bold uppercase tracking-widest text-neutral-400 mb-3">Parça Kategorisi</h3>
-        <div className="space-y-1">
+        <h3 className="text-[9px] font-black uppercase tracking-[0.25em] text-neutral-600 mb-3">Parça Kategorisi</h3>
+        <div className="space-y-0.5">
           <button
             onClick={() => handleCategorySelect('')}
-            className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${!selectedCategory ? 'bg-orange-500 text-white font-semibold' : 'text-neutral-300 hover:text-white hover:bg-[#262626]'}`}
+            className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold transition-all ${!selectedCategory ? 'bg-orange-500 text-white' : 'text-neutral-500 hover:text-white hover:bg-white/4'}`}
           >
             Tümü
           </button>
@@ -89,7 +89,7 @@ const CategoryPage = () => {
               key={cat}
               onClick={() => handleCategorySelect(cat)}
               data-testid={`filter-category-${cat}`}
-              className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${selectedCategory === cat ? 'bg-orange-500 text-white font-semibold' : 'text-neutral-300 hover:text-white hover:bg-[#262626]'}`}
+              className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold transition-all ${selectedCategory === cat ? 'bg-orange-500 text-white' : 'text-neutral-500 hover:text-white hover:bg-white/4'}`}
             >
               {cat}
             </button>
@@ -98,17 +98,17 @@ const CategoryPage = () => {
       </div>
       {!brandSlug && (
         <div>
-          <h3 className="text-xs font-bold uppercase tracking-widest text-neutral-400 mb-3">Marka</h3>
-          <div className="space-y-1">
+          <h3 className="text-[9px] font-black uppercase tracking-[0.25em] text-neutral-600 mb-3">Marka</h3>
+          <div className="space-y-0.5">
             {BRANDS.map(b => (
               <Link
                 key={b.id}
                 to={`/urunler/${b.slug}`}
-                className="flex items-center justify-between px-3 py-2 rounded-lg text-sm text-neutral-300 hover:text-white hover:bg-[#262626] transition-colors"
+                className="flex items-center justify-between px-3 py-2 rounded-xl text-xs text-neutral-500 hover:text-white hover:bg-white/4 transition-all"
                 data-testid={`filter-brand-${b.id}`}
               >
-                <span>{b.name}</span>
-                <span className="text-xs text-neutral-500">{b.models.length} model</span>
+                <span className="font-semibold">{b.name}</span>
+                <span className="text-[10px] text-neutral-700">{b.models.length}</span>
               </Link>
             ))}
           </div>
@@ -116,14 +116,14 @@ const CategoryPage = () => {
       )}
       {brandData && (
         <div>
-          <h3 className="text-xs font-bold uppercase tracking-widest text-neutral-400 mb-3">Model</h3>
-          <div className="space-y-1">
+          <h3 className="text-[9px] font-black uppercase tracking-[0.25em] text-neutral-600 mb-3">Model</h3>
+          <div className="space-y-0.5">
             {brandData.models.map(m => (
               <Link
                 key={m.id}
                 to={`/urunler/${brandSlug}/${m.slug}`}
                 data-testid={`filter-model-${m.id}`}
-                className={`block px-3 py-2 rounded-lg text-sm transition-colors ${modelData?.id === m.id ? 'text-orange-500 font-semibold bg-orange-500/10' : 'text-neutral-300 hover:text-white hover:bg-[#262626]'}`}
+                className={`block px-3 py-2 rounded-xl text-xs font-semibold transition-all ${modelData?.id === m.id ? 'text-orange-400 bg-orange-500/10' : 'text-neutral-500 hover:text-white hover:bg-white/4'}`}
               >
                 {m.full_name}
               </Link>
@@ -137,36 +137,36 @@ const CategoryPage = () => {
   return (
     <div className="pt-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
       {/* Breadcrumb */}
-      <nav className="flex items-center gap-1.5 mb-6 flex-wrap" data-testid="breadcrumb">
+      <nav className="flex items-center gap-1.5 mb-7 flex-wrap" data-testid="breadcrumb">
         {breadcrumbs.map((crumb, i) => (
           <React.Fragment key={i}>
-            {i > 0 && <ChevronRight size={14} className="text-neutral-600 flex-shrink-0" />}
+            {i > 0 && <ChevronRight size={11} className="text-neutral-700 flex-shrink-0" />}
             {crumb.href ? (
-              <Link to={crumb.href} className="text-xs text-neutral-400 hover:text-orange-400 transition-colors font-semibold uppercase tracking-wider">
+              <Link to={crumb.href} className="text-[10px] text-neutral-600 hover:text-orange-400 transition-colors font-bold uppercase tracking-widest">
                 {crumb.label}
               </Link>
             ) : (
-              <span className="text-xs text-orange-400 font-semibold uppercase tracking-wider">{crumb.label}</span>
+              <span className="text-[10px] text-orange-500 font-bold uppercase tracking-widest">{crumb.label}</span>
             )}
           </React.Fragment>
         ))}
       </nav>
 
       {/* Page title */}
-      <div className="mb-6">
-        <h1 className="text-2xl sm:text-3xl font-black text-white font-chivo">
-          {searchQuery ? `"${searchQuery}" için arama sonuçları` :
+      <div className="mb-8">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white font-chivo tracking-tight">
+          {searchQuery ? `"${searchQuery}" Arama Sonuçları` :
            modelData ? modelData.full_name :
            brandData ? `${brandData.name} Parçaları` :
            'Tüm Ürünler'}
         </h1>
-        <p className="text-neutral-400 text-sm mt-1">{total} ürün bulundu</p>
+        <p className="text-neutral-600 text-xs mt-2 uppercase tracking-widest font-semibold">{total} ürün bulundu</p>
       </div>
 
       <div className="flex gap-6">
         {/* Sidebar (Desktop) */}
         <aside className="hidden lg:block w-56 flex-shrink-0">
-          <div className="bg-[#171717] border border-[#3f3f46] rounded-xl p-4 sticky top-24">
+          <div className="bg-[#0d0d0d] border border-[#1a1a1a] rounded-2xl p-4 sticky top-24">
             <FilterSidebar />
           </div>
         </aside>

@@ -60,32 +60,31 @@ const AuthPage = () => {
   };
 
   return (
-    <div className="pt-16 min-h-screen flex items-center justify-center px-4 bg-[#0a0a0a]">
+    <div className="pt-16 min-h-screen flex items-center justify-center px-4 bg-[#050505]">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <Link to="/" className="inline-block">
-            <span className="text-orange-500 text-3xl font-black tracking-tighter font-chivo">MOTO</span>
-            <span className="text-white text-3xl font-black tracking-tighter font-chivo">PROF</span>
+          <Link to="/" className="inline-flex items-center gap-3 group">
+            <div className="w-10 h-10 bg-orange-500 group-hover:bg-orange-400 rounded-xl flex items-center justify-center transition-colors">
+              <span className="text-white font-black text-sm font-chivo">MP</span>
+            </div>
+            <div>
+              <span className="text-orange-400 text-2xl font-black tracking-tighter font-chivo">MOTO</span>
+              <span className="text-white text-2xl font-black tracking-tighter font-chivo">PROF</span>
+            </div>
           </Link>
-          <p className="text-neutral-400 text-sm mt-2">Motorcycle Spare Parts</p>
+          <p className="text-neutral-600 text-xs mt-3 uppercase tracking-widest">Motorcycle Spare Parts</p>
         </div>
 
-        <div className="bg-[#171717] border border-[#3f3f46] rounded-2xl p-6 sm:p-8">
+        <div className="bg-[#0d0d0d] border border-[#1a1a1a] rounded-3xl p-6 sm:p-8">
           {/* Tabs */}
-          <div className="flex bg-[#0a0a0a] rounded-xl p-1 mb-6">
-            <button
-              onClick={() => { setMode('login'); setError(''); }}
-              data-testid="tab-login"
-              className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${mode === 'login' ? 'bg-orange-500 text-white' : 'text-neutral-400 hover:text-white'}`}
-            >
+          <div className="flex bg-[#070707] border border-[#151515] rounded-2xl p-1 mb-7">
+            <button onClick={() => { setMode('login'); setError(''); }} data-testid="tab-login"
+              className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all uppercase tracking-wider ${mode === 'login' ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20' : 'text-neutral-600 hover:text-neutral-400'}`}>
               Giriş Yap
             </button>
-            <button
-              onClick={() => { setMode('register'); setError(''); }}
-              data-testid="tab-register"
-              className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${mode === 'register' ? 'bg-orange-500 text-white' : 'text-neutral-400 hover:text-white'}`}
-            >
+            <button onClick={() => { setMode('register'); setError(''); }} data-testid="tab-register"
+              className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all uppercase tracking-wider ${mode === 'register' ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20' : 'text-neutral-600 hover:text-neutral-400'}`}>
               Kayıt Ol
             </button>
           </div>
@@ -99,83 +98,67 @@ const AuthPage = () => {
           )}
 
           {mode === 'login' ? (
-            <form onSubmit={handleLogin} data-testid={AUTH.loginForm} className="space-y-4">
+            <form onSubmit={handleLogin} data-testid={AUTH.loginForm} className="space-y-5">
               <div>
-                <label className="text-xs font-semibold text-neutral-400 block mb-1.5">E-posta Adresi</label>
-                <input
-                  type="email"
-                  name="email"
-                  value={form.email}
-                  onChange={handleChange}
-                  placeholder="ornek@email.com"
-                  data-testid={AUTH.emailInput}
-                  className="w-full bg-[#0a0a0a] border border-[#3f3f46] text-white placeholder-neutral-600 rounded-lg py-2.5 px-3 text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors"
-                />
+                <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-600 block mb-2">E-posta Adresi</label>
+                <input type="email" name="email" value={form.email} onChange={handleChange}
+                  placeholder="ornek@email.com" data-testid={AUTH.emailInput}
+                  className="w-full bg-[#070707] border border-[#1a1a1a] hover:border-[#252525] focus:border-orange-500 focus:ring-1 focus:ring-orange-500/30 text-white placeholder-neutral-700 rounded-xl py-3 px-4 text-sm transition-all outline-none" />
               </div>
               <div>
-                <label className="text-xs font-semibold text-neutral-400 block mb-1.5">Şifre</label>
+                <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-600 block mb-2">Şifre</label>
                 <div className="relative">
-                  <input
-                    type={showPw ? 'text' : 'password'}
-                    name="password"
-                    value={form.password}
-                    onChange={handleChange}
-                    placeholder="Şifreniz"
-                    data-testid={AUTH.passwordInput}
-                    className="w-full bg-[#0a0a0a] border border-[#3f3f46] text-white placeholder-neutral-600 rounded-lg py-2.5 pl-3 pr-10 text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors"
-                  />
-                  <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-white transition-colors">
-                    {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
+                  <input type={showPw ? 'text' : 'password'} name="password" value={form.password} onChange={handleChange}
+                    placeholder="••••••••" data-testid={AUTH.passwordInput}
+                    className="w-full bg-[#070707] border border-[#1a1a1a] hover:border-[#252525] focus:border-orange-500 focus:ring-1 focus:ring-orange-500/30 text-white placeholder-neutral-700 rounded-xl py-3 pl-4 pr-11 text-sm transition-all outline-none" />
+                  <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-600 hover:text-neutral-400 transition-colors">
+                    {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
                   </button>
                 </div>
               </div>
-              <button
-                type="submit"
-                disabled={loading}
-                data-testid={AUTH.submitBtn}
-                className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-neutral-700 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl transition-all active:scale-95 text-sm uppercase tracking-wider mt-2"
-              >
-                {loading ? <span className="flex items-center justify-center gap-2"><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />Giriş yapılıyor...</span> : 'Giriş Yap'}
+              <button type="submit" disabled={loading} data-testid={AUTH.submitBtn}
+                className="w-full bg-orange-500 hover:bg-orange-600 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl transition-all active:scale-[0.98] text-xs uppercase tracking-widest glow-orange-sm mt-2">
+                {loading ? <span className="flex items-center justify-center gap-2"><div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />Giriş yapılıyor...</span> : 'Giriş Yap'}
               </button>
             </form>
           ) : (
             <form onSubmit={handleRegister} data-testid={AUTH.registerForm} className="space-y-4">
               <div>
-                <label className="text-xs font-semibold text-neutral-400 block mb-1.5">Ad Soyad *</label>
+                <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-600 block mb-2">Ad Soyad *</label>
                 <input type="text" name="name" value={form.name} onChange={handleChange} placeholder="Adınız ve soyadınız"
                   data-testid={AUTH.nameInput}
-                  className="w-full bg-[#0a0a0a] border border-[#3f3f46] text-white placeholder-neutral-600 rounded-lg py-2.5 px-3 text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors" />
+                  className="w-full bg-[#070707] border border-[#1a1a1a] hover:border-[#252525] focus:border-orange-500 focus:ring-1 focus:ring-orange-500/30 text-white placeholder-neutral-700 rounded-xl py-3 px-4 text-sm transition-all outline-none" />
               </div>
               <div>
-                <label className="text-xs font-semibold text-neutral-400 block mb-1.5">E-posta *</label>
+                <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-600 block mb-2">E-posta *</label>
                 <input type="email" name="email" value={form.email} onChange={handleChange} placeholder="ornek@email.com"
                   data-testid={AUTH.emailInput}
-                  className="w-full bg-[#0a0a0a] border border-[#3f3f46] text-white placeholder-neutral-600 rounded-lg py-2.5 px-3 text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors" />
+                  className="w-full bg-[#070707] border border-[#1a1a1a] hover:border-[#252525] focus:border-orange-500 focus:ring-1 focus:ring-orange-500/30 text-white placeholder-neutral-700 rounded-xl py-3 px-4 text-sm transition-all outline-none" />
               </div>
               <div>
-                <label className="text-xs font-semibold text-neutral-400 block mb-1.5">Telefon (İsteğe Bağlı)</label>
+                <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-600 block mb-2">Telefon (İsteğe Bağlı)</label>
                 <input type="tel" name="phone" value={form.phone} onChange={handleChange} placeholder="0(5XX) XXX XX XX"
-                  className="w-full bg-[#0a0a0a] border border-[#3f3f46] text-white placeholder-neutral-600 rounded-lg py-2.5 px-3 text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors" />
+                  className="w-full bg-[#070707] border border-[#1a1a1a] hover:border-[#252525] focus:border-orange-500 focus:ring-1 focus:ring-orange-500/30 text-white placeholder-neutral-700 rounded-xl py-3 px-4 text-sm transition-all outline-none" />
               </div>
               <div>
-                <label className="text-xs font-semibold text-neutral-400 block mb-1.5">Şifre *</label>
+                <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-600 block mb-2">Şifre *</label>
                 <div className="relative">
                   <input type={showPw ? 'text' : 'password'} name="password" value={form.password} onChange={handleChange} placeholder="En az 6 karakter"
                     data-testid={AUTH.passwordInput}
-                    className="w-full bg-[#0a0a0a] border border-[#3f3f46] text-white placeholder-neutral-600 rounded-lg py-2.5 pl-3 pr-10 text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors" />
-                  <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-white transition-colors">
-                    {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
+                    className="w-full bg-[#070707] border border-[#1a1a1a] hover:border-[#252525] focus:border-orange-500 focus:ring-1 focus:ring-orange-500/30 text-white placeholder-neutral-700 rounded-xl py-3 pl-4 pr-11 text-sm transition-all outline-none" />
+                  <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-600 hover:text-neutral-400 transition-colors">
+                    {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
                   </button>
                 </div>
               </div>
               <div>
-                <label className="text-xs font-semibold text-neutral-400 block mb-1.5">Şifre Tekrar *</label>
+                <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-600 block mb-2">Şifre Tekrar *</label>
                 <input type="password" name="confirmPassword" value={form.confirmPassword} onChange={handleChange} placeholder="Şifreyi tekrar girin"
-                  className="w-full bg-[#0a0a0a] border border-[#3f3f46] text-white placeholder-neutral-600 rounded-lg py-2.5 px-3 text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors" />
+                  className="w-full bg-[#070707] border border-[#1a1a1a] hover:border-[#252525] focus:border-orange-500 focus:ring-1 focus:ring-orange-500/30 text-white placeholder-neutral-700 rounded-xl py-3 px-4 text-sm transition-all outline-none" />
               </div>
               <button type="submit" disabled={loading} data-testid={AUTH.submitBtn}
-                className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-neutral-700 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl transition-all active:scale-95 text-sm uppercase tracking-wider mt-2">
-                {loading ? <span className="flex items-center justify-center gap-2"><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />Kayıt olunuyor...</span> : 'Kayıt Ol'}
+                className="w-full bg-orange-500 hover:bg-orange-600 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl transition-all active:scale-[0.98] text-xs uppercase tracking-widest glow-orange-sm mt-2">
+                {loading ? <span className="flex items-center justify-center gap-2"><div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />Kayıt olunuyor...</span> : 'Kayıt Ol'}
               </button>
             </form>
           )}

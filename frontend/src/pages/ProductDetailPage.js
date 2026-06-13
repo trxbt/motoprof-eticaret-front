@@ -82,134 +82,121 @@ const ProductDetailPage = () => {
   return (
     <div className="pt-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16" data-testid="product-detail-page">
       {/* Breadcrumb */}
-      <nav className="flex items-center gap-1.5 mb-6 flex-wrap">
-        <Link to="/" className="text-xs text-neutral-400 hover:text-orange-400 font-semibold uppercase tracking-wider">Ana Sayfa</Link>
-        <ChevronRight size={14} className="text-neutral-600" />
-        <Link to="/urunler" className="text-xs text-neutral-400 hover:text-orange-400 font-semibold uppercase tracking-wider">Moto Parçaları</Link>
+      <nav className="flex items-center gap-1.5 mb-8 flex-wrap">
+        <Link to="/" className="text-[10px] text-neutral-600 hover:text-neutral-400 font-bold uppercase tracking-widest transition-colors">Ana Sayfa</Link>
+        <ChevronRight size={11} className="text-neutral-700" />
+        <Link to="/urunler" className="text-[10px] text-neutral-600 hover:text-neutral-400 font-bold uppercase tracking-widest transition-colors">Moto Parçaları</Link>
         {brandData && (
           <>
-            <ChevronRight size={14} className="text-neutral-600" />
-            <Link to={`/urunler/${brandSlug}`} className="text-xs text-neutral-400 hover:text-orange-400 font-semibold uppercase tracking-wider">{product.brand}</Link>
+            <ChevronRight size={11} className="text-neutral-700" />
+            <Link to={`/urunler/${brandSlug}`} className="text-[10px] text-neutral-600 hover:text-orange-400 font-bold uppercase tracking-widest transition-colors">{product.brand}</Link>
           </>
         )}
-        <ChevronRight size={14} className="text-neutral-600" />
-        <span className="text-xs text-orange-400 font-semibold uppercase tracking-wider truncate max-w-32 sm:max-w-none">{product.model}</span>
-        <ChevronRight size={14} className="text-neutral-600" />
-        <span className="text-xs text-neutral-500 truncate max-w-40 sm:max-w-none">{product.category}</span>
+        <ChevronRight size={11} className="text-neutral-700" />
+        <span className="text-[10px] text-orange-500 font-bold uppercase tracking-widest truncate max-w-32 sm:max-w-none">{product.model}</span>
       </nav>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-14">
         {/* Product Image */}
         <div>
-          <div className="relative bg-[#171717] border border-[#3f3f46] rounded-2xl overflow-hidden aspect-[4/3]">
-            <img
-              src={product.image}
-              alt={product.name}
-              className="w-full h-full object-cover"
-            />
+          <div className="relative bg-[#111111] border border-[#1e1e1e] rounded-3xl overflow-hidden aspect-[4/3]">
+            <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+            {/* bottom gradient */}
+            <div className="absolute inset-0 bg-gradient-to-t from-[#111111]/60 via-transparent to-transparent" />
             {discount && (
-              <div className="absolute top-4 left-4 bg-orange-500 text-white text-sm font-bold px-3 py-1 rounded-full">
-                -{discount}%
+              <div className="absolute top-4 left-4 bg-orange-500 text-white text-xs font-black px-3 py-1.5 rounded-full tracking-wider">
+                -{discount}% İndirim
               </div>
             )}
           </div>
-          {/* SKU */}
-          <p className="text-xs text-neutral-500 mt-3 text-center">SKU: {product.sku}</p>
+          <p className="text-[10px] text-neutral-700 mt-3 text-center font-mono uppercase tracking-widest">SKU: {product.sku}</p>
         </div>
 
         {/* Product Info */}
         <div className="flex flex-col">
-          {/* Brand badge */}
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-xs font-bold uppercase tracking-widest text-orange-500 bg-orange-500/10 px-3 py-1 rounded-full">
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-[10px] font-black uppercase tracking-widest text-orange-500 bg-orange-500/10 border border-orange-500/20 px-3 py-1 rounded-full">
               {product.brand}
             </span>
-            <span className="text-xs text-neutral-500">{product.category}</span>
+            <span className="text-[10px] text-neutral-600 font-semibold uppercase tracking-wider">{product.category}</span>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-black text-white font-chivo leading-tight mb-4">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white font-chivo leading-tight mb-5 tracking-tight">
             {product.name}
           </h1>
 
           {/* Compatibility */}
-          <div className="bg-[#171717] border border-[#3f3f46] rounded-xl p-4 mb-5">
-            <p className="text-xs font-bold uppercase tracking-wider text-neutral-400 mb-2">Uyumlu Araç</p>
-            <div className="flex flex-wrap gap-2">
-              <span className="bg-[#262626] text-white text-sm font-semibold px-3 py-1 rounded-lg border border-[#3f3f46]">
-                {product.brand} {product.model}
-                {product.year_range ? ` (${product.year_range})` : ''}
-              </span>
-            </div>
+          <div className="bg-[#0d0d0d] border border-[#1a1a1a] rounded-2xl p-4 mb-5">
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-600 mb-2.5">Uyumlu Araç</p>
+            <span className="inline-flex items-center gap-2 bg-[#151515] border border-[#252525] text-white text-xs font-bold px-3 py-2 rounded-xl">
+              <span className="w-1.5 h-1.5 bg-orange-500 rounded-full" />
+              {product.brand} {product.model}{product.year_range ? ` (${product.year_range})` : ''}
+            </span>
           </div>
 
           {/* Price */}
-          <div className="flex items-baseline gap-3 mb-5">
-            <span className="text-3xl font-black text-orange-500 font-chivo">
-              {product.price.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺
-            </span>
-            {product.original_price && (
-              <span className="text-lg text-neutral-500 line-through">
-                {product.original_price.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺
-              </span>
-            )}
-            {discount && (
-              <span className="text-sm text-green-400 font-semibold">
-                %{discount} indirim
-              </span>
-            )}
-          </div>
-
-          {/* Stock */}
-          <div className="flex items-center gap-2 mb-6">
-            {product.stock > 0 ? (
-              <>
-                <CheckCircle size={16} className="text-green-500" />
-                <span className="text-sm text-green-400 font-semibold">
-                  Stokta {product.stock} adet
+          <div className="flex items-end gap-4 mb-4">
+            <div>
+              <p className="text-[10px] text-neutral-600 uppercase tracking-widest mb-1">Fiyat</p>
+              <div className="flex items-baseline gap-1">
+                <span className="text-4xl font-black text-orange-400 font-chivo leading-none">
+                  {product.price.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
                 </span>
-              </>
-            ) : (
-              <span className="text-sm text-red-400 font-semibold">Stok tükendi</span>
+                <span className="text-xl font-black text-orange-400 font-chivo">₺</span>
+              </div>
+            </div>
+            {product.original_price && (
+              <div className="mb-1">
+                <span className="text-lg text-neutral-600 line-through font-chivo">
+                  {product.original_price.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺
+                </span>
+                {discount && (
+                  <p className="text-xs text-green-400 font-bold mt-0.5">%{discount} tasarruf</p>
+                )}
+              </div>
             )}
           </div>
 
-          {/* Quantity + Add to Cart */}
+          {/* Stock badge */}
+          <div className="mb-6">
+            {product.stock > 0 ? (
+              <div className="inline-flex items-center gap-2 bg-green-500/8 border border-green-500/15 text-green-400 text-xs font-bold px-3 py-1.5 rounded-full">
+                <CheckCircle size={13} />
+                Stokta var — {product.stock} adet
+              </div>
+            ) : (
+              <div className="inline-flex items-center gap-2 bg-red-500/8 border border-red-500/15 text-red-400 text-xs font-bold px-3 py-1.5 rounded-full">
+                Stok Tükendi
+              </div>
+            )}
+          </div>
+
+          {/* Quantity + Cart */}
           {product.stock > 0 && (
             <div className="flex items-center gap-3 mb-6">
-              <div className="flex items-center bg-[#171717] border border-[#3f3f46] rounded-lg overflow-hidden">
-                <button
-                  onClick={() => setQuantity(q => Math.max(1, q - 1))}
-                  className="px-3 py-3 text-neutral-400 hover:text-white hover:bg-[#262626] transition-colors"
-                  data-testid="quantity-dec"
-                >
-                  <ChevronLeft size={16} />
+              <div className="flex items-center bg-[#0d0d0d] border border-[#1e1e1e] rounded-xl overflow-hidden">
+                <button onClick={() => setQuantity(q => Math.max(1, q - 1))} data-testid="quantity-dec"
+                  className="px-3.5 py-3.5 text-neutral-500 hover:text-white hover:bg-white/5 transition-colors">
+                  <ChevronLeft size={15} />
                 </button>
-                <span className="px-4 text-white font-bold min-w-12 text-center" data-testid="quantity-value">
-                  {quantity}
-                </span>
-                <button
-                  onClick={() => setQuantity(q => Math.min(product.stock, q + 1))}
-                  className="px-3 py-3 text-neutral-400 hover:text-white hover:bg-[#262626] transition-colors"
-                  data-testid="quantity-inc"
-                >
-                  <ChevronRightIcon size={16} />
+                <span className="px-4 text-white font-black min-w-12 text-center font-chivo" data-testid="quantity-value">{quantity}</span>
+                <button onClick={() => setQuantity(q => Math.min(product.stock, q + 1))} data-testid="quantity-inc"
+                  className="px-3.5 py-3.5 text-neutral-500 hover:text-white hover:bg-white/5 transition-colors">
+                  <ChevronRightIcon size={15} />
                 </button>
               </div>
-              <button
-                onClick={handleAddToCart}
-                data-testid="product-detail-add-to-cart"
-                className="flex-1 flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-lg transition-all active:scale-95 text-sm uppercase tracking-wider"
-              >
-                <ShoppingCart size={18} />
+              <button onClick={handleAddToCart} data-testid="product-detail-add-to-cart"
+                className="flex-1 group flex items-center justify-center gap-2.5 bg-orange-500 hover:bg-orange-600 text-white font-bold py-3.5 px-6 rounded-xl transition-all active:scale-[0.98] text-xs uppercase tracking-widest glow-orange-sm shimmer">
+                <ShoppingCart size={16} />
                 Sepete Ekle
               </button>
             </div>
           )}
 
           {/* Description */}
-          <div className="bg-[#171717] border border-[#3f3f46] rounded-xl p-4">
-            <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-2">Ürün Açıklaması</h3>
-            <p className="text-sm text-neutral-300 leading-relaxed">{product.description}</p>
+          <div className="bg-[#0d0d0d] border border-[#1a1a1a] rounded-2xl p-5">
+            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-600 mb-3">Ürün Açıklaması</h3>
+            <p className="text-sm text-neutral-400 leading-relaxed">{product.description}</p>
           </div>
         </div>
       </div>

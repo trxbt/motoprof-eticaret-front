@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ShoppingCart, Tag } from 'lucide-react';
+import { ShoppingCart } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
 import { toast } from 'sonner';
 
@@ -15,9 +15,7 @@ const ProductCard = ({ product }) => {
     e.preventDefault();
     e.stopPropagation();
     addItem(product);
-    toast.success('Sepete eklendi!', {
-      description: product.name,
-    });
+    toast.success('Sepete eklendi!', { description: product.name });
   };
 
   const isOutOfStock = product.stock === 0;
@@ -26,58 +24,86 @@ const ProductCard = ({ product }) => {
     <Link
       to={`/urun/${product.slug}`}
       data-testid={`product-card-${product.slug}`}
-      className="group block focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 rounded-xl"
+      className="group block focus:outline-none"
     >
-      <div className="bg-[#171717] border border-[#3f3f46] rounded-xl overflow-hidden transition-all duration-200 hover:-translate-y-1 hover:border-orange-500/50 hover:shadow-xl hover:shadow-orange-500/10 h-full flex flex-col">
+      <div className="bg-[#111111] border border-[#222222] group-hover:border-orange-500/30 rounded-2xl overflow-hidden transition-all duration-300 group-hover:-translate-y-1.5 group-hover:shadow-2xl group-hover:shadow-orange-500/8 h-full flex flex-col shimmer">
         {/* Image */}
-        <div className="relative overflow-hidden bg-[#262626]" style={{ paddingTop: '65%' }}>
+        <div className="relative overflow-hidden bg-[#1a1a1a]" style={{ paddingTop: '68%' }}>
           <img
             src={product.image}
             alt={product.name}
             loading="lazy"
-            className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
           />
-          {discount && !isOutOfStock && (
-            <div className="absolute top-2 left-2 bg-orange-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-              -{discount}%
-            </div>
-          )}
+          {/* Gradient overlay on image */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#111111] via-transparent to-transparent opacity-60" />
+
+          {/* Badges */}
+          <div className="absolute top-2.5 left-2.5 flex flex-col gap-1.5">
+            {discount && !isOutOfStock && (
+              <span className="bg-orange-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full tracking-wider">
+                -{discount}%
+              </span>
+            )}
+            {product.is_featured && !discount && !isOutOfStock && (
+              <span className="bg-white/10 backdrop-blur-sm border border-white/20 text-white text-[10px] font-bold px-2 py-0.5 rounded-full tracking-wider">
+                ÖZEL
+              </span>
+            )}
+          </div>
+
           {isOutOfStock && (
-            <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-              <span className="text-white text-sm font-semibold bg-black/50 px-3 py-1 rounded-full">Stok Yok</span>
+            <div className="absolute inset-0 bg-black/70 flex items-center justify-center backdrop-blur-[1px]">
+              <span className="text-neutral-400 text-xs font-semibold border border-neutral-700 px-3 py-1 rounded-full">
+                Stok Tükendi
+              </span>
             </div>
           )}
         </div>
 
         {/* Content */}
         <div className="p-4 flex flex-col flex-1">
-          <div className="flex items-center gap-2 mb-1.5">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-orange-500 bg-orange-500/10 px-2 py-0.5 rounded">
+          {/* Brand & Category */}
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] font-black uppercase tracking-widest text-orange-500">
               {product.brand}
             </span>
-            <span className="text-[10px] text-neutral-500 truncate">{product.category}</span>
+            <span className="text-[10px] text-neutral-600 truncate ml-2 max-w-[80px]">{product.category}</span>
           </div>
 
-          <h3 className="text-sm font-semibold text-white line-clamp-2 flex-1 leading-snug">
+          {/* Name */}
+          <h3 className="text-sm font-semibold text-neutral-100 group-hover:text-white line-clamp-2 flex-1 leading-snug transition-colors">
             {product.name}
           </h3>
 
           {product.year_range && (
-            <p className="text-xs text-neutral-500 mt-1">{product.year_range}</p>
+            <p className="text-[10px] text-neutral-600 mt-1.5 flex items-center gap-1">
+              <span className="w-3 h-px bg-neutral-700 inline-block" />
+              {product.year_range}
+            </p>
           )}
 
-          {/* Price */}
-          <div className="mt-3 mb-3">
-            <div className="flex items-baseline gap-2">
-              <span className="text-lg font-black text-orange-500 font-chivo">
-                {product.price.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺
+          {/* Divider */}
+          <div className="h-px bg-[#222222] my-3" />
+
+          {/* Price row */}
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <span className="text-lg font-black text-orange-400 font-chivo leading-none">
+                {product.price.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
               </span>
+              <span className="text-orange-400 font-bold text-sm ml-0.5">₺</span>
               {product.original_price && (
-                <span className="text-xs text-neutral-500 line-through">
+                <div className="text-[11px] text-neutral-600 line-through mt-0.5">
                   {product.original_price.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺
-                </span>
+                </div>
               )}
             </div>
+            {product.stock > 0 && product.stock <= 5 && (
+              <span className="text-[9px] font-bold text-amber-500 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded-full">
+                Son {product.stock}!
+              </span>
+            )}
           </div>
 
           {/* Add to cart */}
@@ -85,9 +111,9 @@ const ProductCard = ({ product }) => {
             onClick={handleAddToCart}
             disabled={isOutOfStock}
             data-testid={`add-to-cart-${product.slug}`}
-            className="flex items-center justify-center gap-2 w-full py-2 text-sm font-bold bg-orange-500 hover:bg-orange-600 disabled:bg-[#262626] disabled:text-neutral-500 disabled:cursor-not-allowed text-white rounded-lg transition-colors active:scale-95"
+            className="group/btn flex items-center justify-center gap-2 w-full py-2.5 text-xs font-bold bg-[#1e1e1e] hover:bg-orange-500 border border-[#2a2a2a] hover:border-orange-500 disabled:opacity-30 disabled:cursor-not-allowed text-neutral-300 hover:text-white rounded-xl transition-all duration-200 active:scale-95 uppercase tracking-wider"
           >
-            <ShoppingCart size={14} />
+            <ShoppingCart size={13} className="group-hover/btn:scale-110 transition-transform" />
             {isOutOfStock ? 'Stok Yok' : 'Sepete Ekle'}
           </button>
         </div>
