@@ -45,7 +45,7 @@ function App() {
             <Footer />
           </div>
           <WhatsAppButton />
-          <Toaster richColors position="top-right" />
+          <Toaster richColors position="top-right" closeButton />
         </CartProvider>
       </AuthProvider>
     </BrowserRouter>
