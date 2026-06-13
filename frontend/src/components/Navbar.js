@@ -240,7 +240,7 @@ const Navbar = () => {
           {/* Search Bar */}
           {searchOpen && (
             <div className="pb-3 animate-fade-in">
-              <form onSubmit={handleSearch} className="relative">
+              <form onSubmit={(e) => { e.preventDefault(); handleSearchKeyDown({ key: 'Enter', preventDefault: () => {} }); }} className="relative">
                 <Search size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500" />
                 <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Ürün, marka veya model ara..." autoFocus data-testid="navbar-search-input"
