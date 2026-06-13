@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ShoppingCart, User, Menu, ChevronDown, X, Search } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from './ui/sheet';
@@ -15,6 +15,19 @@ const Navbar = () => {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [openDropdown, setOpenDropdown] = useState(null);
+  const [scrolled, setScrolled] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
+
+  useEffect(() => {
+    const onScroll = () => {
+      const y = window.scrollY;
+      setScrolled(y > 60);
+      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+      setScrollProgress(maxScroll > 0 ? Math.min((y / maxScroll) * 100, 100) : 0);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -32,21 +45,33 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-[#050505]/95 backdrop-blur-xl border-b border-white/5"
-      style={{ boxShadow: '0 1px 0 rgba(249,115,22,0.08)' }}>
+    <nav
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-out ${
+        scrolled
+          ? 'bg-[#030303]/98 backdrop-blur-2xl border-b border-orange-500/15 shadow-[0_4px_30px_rgba(0,0,0,0.6),0_1px_0_rgba(249,115,22,0.12)]'
+          : 'bg-[#050505]/95 backdrop-blur-xl border-b border-white/5'
+      }`}
+      style={{ boxShadow: scrolled ? undefined : '0 1px 0 rgba(249,115,22,0.08)' }}
+    >
+      {/* Scroll progress bar */}
+      <div
+        className="absolute bottom-0 left-0 h-[2px] bg-gradient-to-r from-orange-600 via-orange-400 to-orange-500 transition-all duration-100 ease-out"
+        style={{ width: `${scrollProgress}%`, opacity: scrollProgress > 1 ? 1 : 0 }}
+      />
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className={`flex items-center justify-between transition-all duration-300 ${scrolled ? 'h-12' : 'h-16'}`}>
 
           {/* Logo */}
           <Link to="/" data-testid={NAVBAR.logo} className="flex items-center gap-3 flex-shrink-0 group">
             <div className="relative">
-              <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center group-hover:bg-orange-400 transition-colors">
-                <span className="text-white font-black text-xs font-chivo">MP</span>
+              <div className={`bg-orange-500 rounded-lg flex items-center justify-center group-hover:bg-orange-400 transition-all duration-300 ${scrolled ? 'w-7 h-7' : 'w-8 h-8'}`}>
+                <span className={`text-white font-black font-chivo transition-all duration-300 ${scrolled ? 'text-[9px]' : 'text-xs'}`}>MP</span>
               </div>
             </div>
             <div className="flex items-baseline gap-0.5">
-              <span className="text-orange-400 text-xl font-black tracking-tighter font-chivo">MOTO</span>
-              <span className="text-white text-xl font-black tracking-tighter font-chivo">PROF</span>
+              <span className={`text-orange-400 font-black tracking-tighter font-chivo transition-all duration-300 ${scrolled ? 'text-lg' : 'text-xl'}`}>MOTO</span>
+              <span className={`text-white font-black tracking-tighter font-chivo transition-all duration-300 ${scrolled ? 'text-lg' : 'text-xl'}`}>PROF</span>
             </div>
           </Link>
 

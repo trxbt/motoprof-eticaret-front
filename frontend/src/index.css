@@ -44,6 +44,21 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
+  /* Hide Emergent badge */
+  #emergent-badge {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+
+  /* Custom cursor - only on devices with hover (desktop) */
+  @media (hover: hover) and (pointer: fine) {
+    *, *::before, *::after {
+      cursor: none !important;
+    }
+  }
+
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Chivo', 'IBM Plex Sans', sans-serif;
   }

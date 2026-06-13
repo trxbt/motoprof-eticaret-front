@@ -137,7 +137,7 @@ const CategoryPage = () => {
   return (
     <div className="pt-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
       {/* Breadcrumb */}
-      <nav className="flex items-center gap-1.5 mb-7 flex-wrap" data-testid="breadcrumb">
+      <nav className="flex items-center gap-1.5 mb-5 flex-wrap" data-testid="breadcrumb">
         {breadcrumbs.map((crumb, i) => (
           <React.Fragment key={i}>
             {i > 0 && <ChevronRight size={11} className="text-neutral-700 flex-shrink-0" />}
@@ -152,16 +152,60 @@ const CategoryPage = () => {
         ))}
       </nav>
 
-      {/* Page title */}
-      <div className="mb-8">
-        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white font-chivo tracking-tight">
-          {searchQuery ? `"${searchQuery}" Arama Sonuçları` :
-           modelData ? modelData.full_name :
-           brandData ? `${brandData.name} Parçaları` :
-           'Tüm Ürünler'}
-        </h1>
-        <p className="text-neutral-600 text-xs mt-2 uppercase tracking-widest font-semibold">{total} ürün bulundu</p>
-      </div>
+      {/* Model / Brand Hero Banner */}
+      {(modelData || brandData) && !searchQuery && (
+        <div className="relative h-44 sm:h-56 lg:h-64 rounded-2xl overflow-hidden mb-8 border border-[#1e1e1e]">
+          <img
+            src={modelData?.image || brandData?.image}
+            alt={modelData?.full_name || brandData?.name}
+            className="w-full h-full object-cover"
+          />
+          {/* Dark cinematic overlay */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#050505]/90 via-[#050505]/65 to-[#050505]/30" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#050505]/70 via-transparent to-transparent" />
+
+          {/* Content */}
+          <div className="absolute inset-0 flex items-end pb-6 px-6 sm:px-8">
+            <div>
+              <span className="inline-flex items-center gap-2 bg-orange-500/15 border border-orange-500/30 text-orange-400 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest mb-3">
+                <span className="w-1.5 h-1.5 bg-orange-400 rounded-full" />
+                {brandData?.name}
+              </span>
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white font-chivo tracking-tight leading-tight">
+                {modelData ? modelData.full_name : `${brandData?.name} Parçaları`}
+              </h1>
+              {modelData?.description && (
+                <p className="text-neutral-400 text-sm mt-1.5 hidden sm:block">{modelData.description}</p>
+              )}
+              {!loading && (
+                <p className="text-neutral-500 text-xs mt-2 font-semibold uppercase tracking-widest">
+                  {total} ürün mevcut
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Search result title */}
+      {searchQuery && (
+        <div className="mb-8">
+          <h1 className="text-2xl sm:text-3xl font-black text-white font-chivo tracking-tight">
+            "{searchQuery}" için Sonuçlar
+          </h1>
+          <p className="text-neutral-600 text-xs mt-2 uppercase tracking-widest font-semibold">{total} ürün bulundu</p>
+        </div>
+      )}
+
+      {/* No hero - All Products */}
+      {!modelData && !brandData && !searchQuery && (
+        <div className="mb-8">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white font-chivo tracking-tight">
+            Tüm Ürünler
+          </h1>
+          <p className="text-neutral-600 text-xs mt-2 uppercase tracking-widest font-semibold">{total} ürün</p>
+        </div>
+      )}
 
       <div className="flex gap-6">
         {/* Sidebar (Desktop) */}

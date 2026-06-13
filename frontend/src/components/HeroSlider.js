@@ -133,20 +133,6 @@ const HeroSlider = () => {
             className={`w-1 rounded-full transition-all duration-300 ${i === current ? 'bg-orange-500 h-8' : 'bg-white/30 h-3 hover:bg-white/60'}`} />
         ))}
       </div>
-
-      {/* Stats bar */}
-      <div className="absolute bottom-0 left-0 right-0">
-        <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-16 pb-6">
-          <div className="hidden sm:grid grid-cols-4 gap-px bg-white/5 rounded-2xl overflow-hidden border border-white/8 max-w-2xl">
-            {STATS.map(({ value, label }) => (
-              <div key={label} className="glass-dark px-4 py-3 text-center">
-                <p className="text-xl font-black text-orange-400 font-chivo leading-none">{value}</p>
-                <p className="text-[10px] text-neutral-500 mt-1 uppercase tracking-wider">{label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
     </div>
   );
 };

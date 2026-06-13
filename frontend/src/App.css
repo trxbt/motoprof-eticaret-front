@@ -55,3 +55,80 @@
 .section-divider {
   border-color: #3f3f46;
 }
+
+/* Neon orange glow - Search Engine border */
+@keyframes neonPulse {
+  0%, 100% {
+    box-shadow:
+      0 0 8px rgba(249, 115, 22, 0.35),
+      0 0 20px rgba(249, 115, 22, 0.18),
+      inset 0 0 12px rgba(249, 115, 22, 0.04);
+  }
+  50% {
+    box-shadow:
+      0 0 16px rgba(249, 115, 22, 0.55),
+      0 0 40px rgba(249, 115, 22, 0.28),
+      inset 0 0 20px rgba(249, 115, 22, 0.07);
+  }
+}
+
+@keyframes neonPulseActive {
+  0%, 100% {
+    box-shadow:
+      0 0 16px rgba(249, 115, 22, 0.6),
+      0 0 45px rgba(249, 115, 22, 0.35),
+      0 0 80px rgba(249, 115, 22, 0.15),
+      inset 0 0 20px rgba(249, 115, 22, 0.06);
+  }
+  50% {
+    box-shadow:
+      0 0 24px rgba(249, 115, 22, 0.8),
+      0 0 60px rgba(249, 115, 22, 0.45),
+      0 0 100px rgba(249, 115, 22, 0.2),
+      inset 0 0 30px rgba(249, 115, 22, 0.09);
+  }
+}
+
+.neon-search-idle {
+  animation: neonPulse 3s ease-in-out infinite;
+}
+
+.neon-search-active {
+  animation: neonPulseActive 2s ease-in-out infinite;
+}
+
+/* Shimmer animation for search button */
+@keyframes shimmerSlide {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.btn-neon-orange {
+  background: linear-gradient(
+    90deg,
+    #ea580c 0%,
+    #f97316 40%,
+    #fb923c 50%,
+    #f97316 60%,
+    #ea580c 100%
+  );
+  background-size: 200% auto;
+  animation: shimmerSlide 3s linear infinite;
+  box-shadow: 0 0 20px rgba(249, 115, 22, 0.45), 0 4px 15px rgba(249, 115, 22, 0.3);
+  transition: box-shadow 0.3s ease, transform 0.1s ease;
+}
+
+.btn-neon-orange:hover {
+  box-shadow: 0 0 35px rgba(249, 115, 22, 0.7), 0 6px 25px rgba(249, 115, 22, 0.45);
+}
+
+.btn-neon-orange:active {
+  transform: scale(0.97);
+}
+
+.btn-neon-orange:disabled {
+  background: #1a1a1a;
+  animation: none;
+  box-shadow: none;
+  color: #555;
+}

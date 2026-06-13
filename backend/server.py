@@ -109,6 +109,7 @@ class OrderCreate(BaseModel):
     shipping_phone: str
     shipping_address: str
     shipping_city: str
+    guest_email: Optional[str] = None
 
 # ─── Auth endpoints ────────────────────────────────────────────────────────────
 @api_router.post("/auth/register")
@@ -219,10 +220,13 @@ def serialize_order(o: dict) -> dict:
 
 @api_router.post("/orders")
 async def create_order(data: OrderCreate, request: Request):
-    user = await get_current_user(request)
+    user = await get_optional_user(request)
+    if user is None and not data.guest_email:
+        raise HTTPException(status_code=400, detail="Misafir siparişi için e-posta adresi gereklidir")
     order = {
-        "user_id": user["_id"] if "_id" in user else user["id"],
-        "user_email": user["email"],
+        "user_id": user.get("_id") or user.get("id") if user else "guest",
+        "user_email": user["email"] if user else data.guest_email,
+        "is_guest": user is None,
         "items": [item.model_dump() for item in data.items],
         "total": data.total,
         "shipping_name": data.shipping_name,

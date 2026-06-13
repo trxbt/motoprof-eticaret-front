@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { Eye, EyeOff, Bike, AlertCircle } from 'lucide-react';
+import { Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { AUTH } from '../constants/testIds';
+import WelcomeDiscountModal from '../components/WelcomeDiscountModal';
 
 function formatError(detail) {
   if (!detail) return 'Bir hata oluştu. Lütfen tekrar deneyin.';
@@ -13,10 +14,12 @@ function formatError(detail) {
 }
 
 const AuthPage = () => {
-  const [mode, setMode] = useState('login'); // 'login' | 'register'
+  const [mode, setMode] = useState('login');
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showWelcome, setShowWelcome] = useState(false);
+  const [newUserName, setNewUserName] = useState('');
   const { login, register } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -51,7 +54,8 @@ const AuthPage = () => {
     setLoading(true);
     try {
       await register(form.name, form.email, form.password, form.phone || undefined);
-      navigate(redirect, { replace: true });
+      setNewUserName(form.name);
+      setShowWelcome(true);
     } catch (err) {
       setError(formatError(err.response?.data?.detail) || err.message);
     } finally {
@@ -59,8 +63,16 @@ const AuthPage = () => {
     }
   };
 
+  const handleWelcomeClose = () => {
+    setShowWelcome(false);
+    navigate(redirect, { replace: true });
+  };
+
   return (
     <div className="pt-16 min-h-screen flex items-center justify-center px-4 bg-[#050505]">
+      {showWelcome && (
+        <WelcomeDiscountModal userName={newUserName} onClose={handleWelcomeClose} />
+      )}
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">

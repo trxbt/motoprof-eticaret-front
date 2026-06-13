@@ -5,6 +5,8 @@ import { CartProvider } from './contexts/CartContext';
 import { Toaster } from './components/ui/sonner';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import CustomCursor from './components/CustomCursor';
+import WhatsAppButton from './components/WhatsAppButton';
 import ProtectedRoute from './components/ProtectedRoute';
 import HomePage from './pages/HomePage';
 import CategoryPage from './pages/CategoryPage';
@@ -20,6 +22,7 @@ function App() {
     <BrowserRouter>
       <AuthProvider>
         <CartProvider>
+          <CustomCursor />
           <div className="min-h-screen bg-[#0a0a0a] text-white">
             <Navbar />
             <main>
@@ -30,11 +33,7 @@ function App() {
                 <Route path="/urunler/:brand/:model" element={<CategoryPage />} />
                 <Route path="/urun/:slug" element={<ProductDetailPage />} />
                 <Route path="/sepet" element={<CartPage />} />
-                <Route path="/odeme" element={
-                  <ProtectedRoute>
-                    <CheckoutPage />
-                  </ProtectedRoute>
-                } />
+                <Route path="/odeme" element={<CheckoutPage />} />
                 <Route path="/giris" element={<AuthPage />} />
                 <Route path="/profil" element={
                   <ProtectedRoute>
@@ -45,6 +44,7 @@ function App() {
             </main>
             <Footer />
           </div>
+          <WhatsAppButton />
           <Toaster richColors position="top-right" />
         </CartProvider>
       </AuthProvider>

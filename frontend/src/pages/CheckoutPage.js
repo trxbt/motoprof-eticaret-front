@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { CheckCircle, CreditCard, Lock, Package } from 'lucide-react';
+import { CheckCircle, CreditCard, Lock, Package, User, ArrowRight } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 import { CHECKOUT } from '../constants/testIds';
@@ -19,6 +19,7 @@ const CheckoutPage = () => {
     shipping_phone: user?.phone || '',
     shipping_address: '',
     shipping_city: '',
+    guest_email: '',
   });
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -33,7 +34,11 @@ const CheckoutPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.shipping_name || !form.shipping_phone || !form.shipping_address || !form.shipping_city) {
-      setError('Lütfen tüm alanları doldurun.');
+      setError('Lütfen tüm teslimat alanlarını doldurun.');
+      return;
+    }
+    if (!user && !form.guest_email) {
+      setError('Lütfen e-posta adresinizi girin.');
       return;
     }
     if (items.length === 0) {
@@ -52,7 +57,11 @@ const CheckoutPage = () => {
           image: item.image,
         })),
         total,
-        ...form,
+        shipping_name: form.shipping_name,
+        shipping_phone: form.shipping_phone,
+        shipping_address: form.shipping_address,
+        shipping_city: form.shipping_city,
+        guest_email: user ? undefined : form.guest_email,
       };
       const { data } = await axios.post(`${API}/orders`, orderData, { withCredentials: true });
       setOrderId(data.id);
@@ -92,12 +101,48 @@ const CheckoutPage = () => {
 
   return (
     <div className="pt-20 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-      <h1 className="text-2xl font-black text-white font-chivo mb-6">Siparişi Tamamla</h1>
+      <h1 className="text-2xl font-black text-white font-chivo mb-2">Siparişi Tamamla</h1>
+      {!user && (
+        <div className="flex items-center justify-between bg-[#111] border border-orange-500/20 rounded-xl px-4 py-3 mb-6">
+          <div className="flex items-center gap-2.5">
+            <User size={15} className="text-orange-400 flex-shrink-0" />
+            <p className="text-sm text-neutral-400">
+              Hesabın var mı? <Link to="/giris?redirect=/odeme" className="text-orange-400 hover:text-orange-300 font-semibold">Giriş yap</Link> — siparişlerini takip et
+            </p>
+          </div>
+          <Link to="/giris?redirect=/odeme" className="hidden sm:flex items-center gap-1 text-xs font-bold text-orange-500 hover:text-orange-400 border border-orange-500/25 px-3 py-1.5 rounded-lg transition-colors">
+            Giriş Yap <ArrowRight size={12} />
+          </Link>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         {/* Shipping Form */}
         <div className="lg:col-span-3">
           <form onSubmit={handleSubmit} data-testid={CHECKOUT.form}>
+
+            {/* Guest email - only if not logged in */}
+            {!user && (
+              <div className="bg-[#171717] border border-[#3f3f46] rounded-xl p-5 mb-4">
+                <h2 className="text-sm font-bold text-white uppercase tracking-wider mb-4 flex items-center gap-2">
+                  <User size={16} className="text-orange-500" />
+                  İletişim Bilgisi
+                </h2>
+                <div>
+                  <label className="text-xs text-neutral-400 font-semibold block mb-1.5">E-posta Adresiniz *</label>
+                  <input
+                    type="email"
+                    name="guest_email"
+                    value={form.guest_email}
+                    onChange={handleChange}
+                    placeholder="siparis@ornek.com"
+                    data-testid="checkout-guest-email"
+                    className="w-full bg-[#0a0a0a] border border-[#3f3f46] text-white placeholder-neutral-600 rounded-lg py-2.5 px-3 text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors"
+                  />
+                  <p className="text-xs text-neutral-600 mt-1.5">Sipariş bilgisi bu adrese gönderilecektir.</p>
+                </div>
+              </div>
+            )}
             <div className="bg-[#171717] border border-[#3f3f46] rounded-xl p-5 mb-4">
               <h2 className="text-sm font-bold text-white uppercase tracking-wider mb-4 flex items-center gap-2">
                 <Package size={16} className="text-orange-500" />
