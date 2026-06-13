@@ -241,7 +241,8 @@ const ProductDetailPage = () => {
               <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-600 mb-3">Ürün Bilgileri</h3>
               <div className="space-y-2">
                 {[
-                  { label: 'SKU / Stok Kodu', value: product.sku },
+                  { label: 'SKU / Ürün Kodu', value: product.sku },
+                  { label: 'OEM / Orijinal Parça Kodu', value: product.oem_kodu || '—' },
                   { label: 'Marka', value: product.brand },
                   { label: 'Uyumlu Model', value: `${product.model}${product.year_range ? ` (${product.year_range})` : ''}` },
                   { label: 'Parça Kategorisi', value: product.category },
