@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { X, MessageCircle } from 'lucide-react';
 
 const WHATSAPP_NUMBER = '905551234567'; // Numarayı buradan güncelleyebilirsiniz
@@ -7,6 +8,9 @@ const WHATSAPP_MESSAGE = 'Merhaba! MotoProf hakkında bilgi almak istiyorum.';
 const WhatsAppButton = () => {
   const [showTooltip, setShowTooltip] = useState(false);
   const [dismissed, setDismissed] = useState(false);
+  const { pathname } = useLocation();
+
+  if (pathname === '/sepet' || pathname === '/odeme') return null;
 
   const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(WHATSAPP_MESSAGE)}`;
 
