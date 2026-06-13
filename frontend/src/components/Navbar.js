@@ -3,10 +3,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   ShoppingCart, User, Menu, ChevronDown, X, Search,
   ChevronRight, LogIn, UserPlus, Package, Home, Grid3x3,
-  Loader2, ArrowRight, TrendingUp
+  Loader2, ArrowRight, TrendingUp, Heart
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
+import { useWishlist } from '../contexts/WishlistContext';
 import { BRANDS } from '../constants/categories';
 import { NAVBAR } from '../constants/testIds';
 import axios from 'axios';
@@ -25,6 +26,7 @@ function useDebounce(value, delay) {
 const Navbar = () => {
   const { user, logout } = useAuth();
   const { itemCount } = useCart();
+  const { count: wishlistCount } = useWishlist();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -186,6 +188,17 @@ const Navbar = () => {
                 className="w-9 h-9 flex items-center justify-center text-neutral-500 hover:text-white hover:bg-white/5 rounded-lg transition-all">
                 <Search size={17} />
               </button>
+
+              {/* Favoriler */}
+              <Link to="/favoriler" data-testid="navbar-wishlist-btn"
+                className="relative w-9 h-9 flex items-center justify-center text-neutral-500 hover:text-red-400 hover:bg-white/5 rounded-lg transition-all">
+                <Heart size={17} className={wishlistCount > 0 ? 'fill-red-500 text-red-500' : ''} />
+                {wishlistCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[9px] font-black rounded-full min-w-[16px] h-4 flex items-center justify-center px-1 leading-none">
+                    {wishlistCount > 99 ? '99+' : wishlistCount}
+                  </span>
+                )}
+              </Link>
 
               <Link to="/sepet" data-testid={NAVBAR.cartBtn}
                 className="relative w-9 h-9 flex items-center justify-center text-neutral-500 hover:text-white hover:bg-white/5 rounded-lg transition-all">

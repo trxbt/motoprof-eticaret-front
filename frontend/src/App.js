@@ -1,7 +1,9 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
 import { AuthProvider } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
+import { WishlistProvider } from './contexts/WishlistContext';
 import { Toaster } from './components/ui/sonner';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -16,13 +18,16 @@ import CartPage from './pages/CartPage';
 import CheckoutPage from './pages/CheckoutPage';
 import AuthPage from './pages/AuthPage';
 import ProfilePage from './pages/ProfilePage';
+import WishlistPage from './pages/WishlistPage';
 import './App.css';
 
 function App() {
   return (
+    <HelmetProvider>
     <BrowserRouter>
       <AuthProvider>
         <CartProvider>
+          <WishlistProvider>
           <CustomCursor />
           <div className="min-h-screen bg-[#0a0a0a] text-white">
             <Navbar />
@@ -36,6 +41,7 @@ function App() {
                 <Route path="/sepet" element={<CartPage />} />
                 <Route path="/odeme" element={<CheckoutPage />} />
                 <Route path="/giris" element={<AuthPage />} />
+                <Route path="/favoriler" element={<WishlistPage />} />
                 <Route path="/profil" element={
                   <ProtectedRoute>
                     <ProfilePage />
@@ -48,9 +54,11 @@ function App() {
           <WhatsAppButton />
           <PWAInstallBanner />
           <Toaster richColors position="top-right" closeButton />
+          </WishlistProvider>
         </CartProvider>
       </AuthProvider>
     </BrowserRouter>
+    </HelmetProvider>
   );
 }
 

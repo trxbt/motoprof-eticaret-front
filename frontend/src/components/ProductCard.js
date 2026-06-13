@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ShoppingCart } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
+import WishlistButton from './WishlistButton';
 import { toast } from 'sonner';
 
 const ProductCard = ({ product }) => {
@@ -51,6 +52,13 @@ const ProductCard = ({ product }) => {
               </span>
             )}
           </div>
+
+          {/* Wishlist button */}
+          <WishlistButton
+            productId={product.id}
+            size={15}
+            className="absolute top-2.5 right-2.5 w-7 h-7 bg-black/50 backdrop-blur-sm rounded-full"
+          />
 
           {isOutOfStock && (
             <div className="absolute inset-0 bg-black/70 flex items-center justify-center backdrop-blur-[1px]">

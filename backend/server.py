@@ -121,6 +121,19 @@ class OrderCreate(BaseModel):
     shipping_city: str
     guest_email: Optional[str] = None
     invoice: Optional[InvoiceInfo] = None
+    coupon_code: Optional[str] = None
+    discount: Optional[float] = None
+
+class CouponValidate(BaseModel):
+    code: str
+    cart_total: float
+
+class WishlistToggle(BaseModel):
+    product_id: str
+
+class StockNotifyRequest(BaseModel):
+    product_id: str
+    email: str
 
 # ─── Auth endpoints ────────────────────────────────────────────────────────────
 @api_router.post("/auth/register")
@@ -185,6 +198,8 @@ async def refresh(request: Request, response: Response):
 # ─── Product endpoints ─────────────────────────────────────────────────────────
 def serialize_product(p: dict) -> dict:
     p["id"] = str(p.pop("_id"))
+    if not p.get("images"):
+        p["images"] = [p["image"]] if p.get("image") else []
     return p
 
 @api_router.get("/products")
@@ -255,6 +270,8 @@ async def create_order(data: OrderCreate, request: Request):
         "status": "pending",
         "payment_status": "mock_paid",
         "invoice": data.invoice.model_dump() if data.invoice else None,
+        "coupon_code": data.coupon_code,
+        "discount": data.discount,
         "created_at": datetime.now(timezone.utc),
     }
     result = await db.orders.insert_one(order)
@@ -283,6 +300,82 @@ async def get_order(order_id: str, request: Request):
 @api_router.get("/")
 async def root():
     return {"message": "MotoProf API çalışıyor", "version": "1.0.0"}
+
+# ─── Coupon endpoints ──────────────────────────────────────────────────────────
+@api_router.post("/coupons/validate")
+async def validate_coupon(data: CouponValidate):
+    coupon = await db.coupons.find_one({"code": data.code.upper().strip(), "active": True})
+    if not coupon:
+        raise HTTPException(status_code=404, detail="Geçersiz veya kullanılmış kupon kodu")
+    if data.cart_total < coupon["min_order"]:
+        raise HTTPException(status_code=400, detail=f"Bu kupon için minimum sipariş tutarı {coupon['min_order']:.0f}₺")
+    if coupon["type"] == "fixed":
+        discount = min(coupon["value"], data.cart_total)
+    else:
+        discount = round(data.cart_total * coupon["value"] / 100, 2)
+    return {"code": coupon["code"], "type": coupon["type"], "value": coupon["value"],
+            "discount": discount, "description": coupon["description"]}
+
+# ─── Wishlist endpoints ────────────────────────────────────────────────────────
+@api_router.get("/wishlist")
+async def get_wishlist(request: Request):
+    user = await get_current_user(request)
+    uid = user.get("id") or user.get("_id")
+    wishlist = await db.wishlists.find_one({"user_id": uid})
+    return {"product_ids": wishlist["product_ids"] if wishlist else []}
+
+@api_router.post("/wishlist/toggle")
+async def toggle_wishlist(data: WishlistToggle, request: Request):
+    user = await get_current_user(request)
+    uid = user.get("id") or user.get("_id")
+    wishlist = await db.wishlists.find_one({"user_id": uid})
+    if wishlist:
+        if data.product_id in wishlist["product_ids"]:
+            await db.wishlists.update_one({"user_id": uid}, {"$pull": {"product_ids": data.product_id}})
+            return {"action": "removed"}
+        else:
+            await db.wishlists.update_one({"user_id": uid}, {"$addToSet": {"product_ids": data.product_id}})
+            return {"action": "added"}
+    else:
+        await db.wishlists.insert_one({"user_id": uid, "product_ids": [data.product_id]})
+        return {"action": "added"}
+
+# ─── Stock Notification endpoints ─────────────────────────────────────────────
+@api_router.post("/stock-notify")
+async def stock_notify(data: StockNotifyRequest):
+    existing = await db.stock_notifications.find_one(
+        {"product_id": data.product_id, "email": data.email.lower().strip()}
+    )
+    if existing:
+        return {"message": "Bu ürün için zaten bildirim listendesiniz"}
+    await db.stock_notifications.insert_one({
+        "product_id": data.product_id,
+        "email": data.email.lower().strip(),
+        "created_at": datetime.now(timezone.utc),
+        "notified": False,
+    })
+    return {"message": "Ürün tekrar stoğa girdiğinde e-posta ile bilgilendirileceksiniz"}
+
+# ─── Sitemap ───────────────────────────────────────────────────────────────────
+@api_router.get("/sitemap.xml", include_in_schema=False)
+async def sitemap():
+    base = "https://motoprof.com.tr"
+    products = await db.products.find({}, {"slug": 1}).to_list(500)
+    urls = [
+        f"<url><loc>{base}/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>",
+        f"<url><loc>{base}/urunler</loc><changefreq>daily</changefreq><priority>0.9</priority></url>",
+        f"<url><loc>{base}/urunler/honda</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>",
+        f"<url><loc>{base}/urunler/yamaha</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>",
+        f"<url><loc>{base}/urunler/cfmoto</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>",
+        f"<url><loc>{base}/urunler/bajaj</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>",
+    ]
+    for p in products:
+        urls.append(f"<url><loc>{base}/urun/{p['slug']}</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>")
+    xml = f"""<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+{''.join(urls)}
+</urlset>"""
+    return Response(content=xml, media_type="application/xml")
 
 # ─── Seed Data ─────────────────────────────────────────────────────────────────
 DEMO_PRODUCTS = [
@@ -463,6 +556,25 @@ DEMO_PRODUCTS = [
      "oem_kodu": "88100-MCA-S00", "is_featured": False},
 ]
 
+GALLERY_POOL = [
+    "https://images.unsplash.com/photo-1534755563369-ad37931ac77b?w=600&q=80",
+    "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=600&q=80",
+    "https://images.unsplash.com/photo-1429772011165-0c2e054367b8?w=600&q=80",
+    "https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?w=600&q=80",
+    "https://images.unsplash.com/photo-1558981285-6f0c68243c5a?w=600&q=80",
+]
+
+DEMO_COUPONS = [
+    {"code": "MOTO10", "type": "percent", "value": 10, "min_order": 200,
+     "description": "Tüm alışverişlerde %10 indirim (min 200₺)", "active": True},
+    {"code": "ILKALIS", "type": "percent", "value": 15, "min_order": 0,
+     "description": "İlk alışverişinize özel %15 indirim", "active": True},
+    {"code": "KARGO50", "type": "fixed", "value": 50, "min_order": 500,
+     "description": "500₺ ve üzeri siparişlerde 50₺ indirim", "active": True},
+    {"code": "WELCOME", "type": "percent", "value": 10, "min_order": 0,
+     "description": "Hoş geldin kuponu %10 indirim", "active": True},
+]
+
 async def seed_admin():
     admin_email = os.environ.get("ADMIN_EMAIL", "admin@motoprof.com")
     admin_password = os.environ.get("ADMIN_PASSWORD", "Admin123!")
@@ -486,18 +598,26 @@ async def seed_products():
         await db.products.insert_many([dict(p) for p in DEMO_PRODUCTS])
         logger.info(f"Seeded {len(DEMO_PRODUCTS)} demo products")
     else:
-        # Mevcut ürünlere oem_kodu alanını ekle (migration)
-        oem_map = {p["slug"]: {"oem_kodu": p.get("oem_kodu", "")} for p in DEMO_PRODUCTS}
-        updated = 0
-        for slug, fields in oem_map.items():
-            result = await db.products.update_one(
-                {"slug": slug, "oem_kodu": {"$exists": False}},
-                {"$set": fields}
-            )
-            if result.modified_count:
-                updated += 1
-        if updated:
-            logger.info(f"Migrated {updated} products with oem_kodu field")
+        # Migration: oem_kodu + images array
+        oem_map = {p["slug"]: p.get("oem_kodu", "") for p in DEMO_PRODUCTS}
+        async for product in db.products.find({}):
+            updates = {}
+            if not product.get("oem_kodu") and product["slug"] in oem_map:
+                updates["oem_kodu"] = oem_map[product["slug"]]
+            if not product.get("images"):
+                main = product.get("image", "")
+                extras = [img for img in GALLERY_POOL if img != main][:2]
+                updates["images"] = [main] + extras if main else extras
+            if updates:
+                await db.products.update_one({"_id": product["_id"]}, {"$set": updates})
+
+async def seed_coupons():
+    for coupon in DEMO_COUPONS:
+        await db.coupons.update_one(
+            {"code": coupon["code"]},
+            {"$setOnInsert": coupon},
+            upsert=True
+        )
 
 # ─── App startup ───────────────────────────────────────────────────────────────
 app.include_router(api_router)
@@ -515,6 +635,7 @@ async def startup():
     await db.users.create_index("email", unique=True)
     await seed_admin()
     await seed_products()
+    await seed_coupons()
     logger.info("MotoProf API started successfully")
 
 @app.on_event("shutdown")

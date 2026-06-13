@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { CheckCircle, CreditCard, Lock, Package, User, ArrowRight, FileText, Building2, UserCheck, ChevronDown } from 'lucide-react';
+import { CheckCircle, CreditCard, Lock, Package, User, ArrowRight, FileText, Building2, UserCheck, ChevronDown, Tag, X } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 import { CHECKOUT } from '../constants/testIds';
@@ -42,6 +42,25 @@ const CheckoutPage = () => {
   const [success, setSuccess] = useState(false);
   const [orderId, setOrderId] = useState(null);
   const [error, setError] = useState('');
+  const [couponCode, setCouponCode] = useState('');
+  const [coupon, setCoupon] = useState(null);
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [couponError, setCouponError] = useState('');
+
+  const finalTotal = coupon ? Math.max(0, total - coupon.discount) : total;
+
+  const applyCoupon = async () => {
+    if (!couponCode.trim()) return;
+    setCouponLoading(true); setCouponError('');
+    try {
+      const { data } = await axios.post(`${API}/coupons/validate`, { code: couponCode.toUpperCase(), cart_total: total });
+      setCoupon(data);
+      toast.success(`"${data.code}" kuponu uygulandı! ${data.discount.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}₺ indirim`);
+    } catch (err) {
+      setCouponError(err.response?.data?.detail || 'Geçersiz kupon kodu');
+      setCoupon(null);
+    } finally { setCouponLoading(false); }
+  };
 
   const handleChange = (e) => {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -81,13 +100,15 @@ const CheckoutPage = () => {
           product_id: item.id, name: item.name,
           price: item.price, quantity: item.quantity, image: item.image,
         })),
-        total,
+        total: finalTotal,
         shipping_name: form.shipping_name,
         shipping_phone: form.shipping_phone,
         shipping_address: form.shipping_address,
         shipping_city: form.shipping_city,
         guest_email: user ? undefined : form.guest_email,
         invoice: wantsInvoice ? { type: invoiceType, ...invoice } : null,
+        coupon_code: coupon?.code || null,
+        discount: coupon?.discount || null,
       };
       const { data } = await axios.post(`${API}/orders`, orderData, { withCredentials: true });
       setOrderId(data.id);
@@ -394,11 +415,47 @@ const CheckoutPage = () => {
                 <span className="text-neutral-400">Kargo</span>
                 <span className="text-green-400 font-semibold">Ücretsiz</span>
               </div>
+
+              {/* Kupon kodu */}
+              {coupon ? (
+                <div className="flex items-center justify-between text-sm py-1 px-2 bg-green-500/8 rounded-lg border border-green-500/15">
+                  <div className="flex items-center gap-1.5 text-green-400 font-semibold">
+                    <Tag size={12} />
+                    <span>{coupon.code}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-green-400 font-bold">-{coupon.discount.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺</span>
+                    <button onClick={() => { setCoupon(null); setCouponCode(''); }} className="text-neutral-600 hover:text-red-400 transition-colors">
+                      <X size={12} />
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="pt-1">
+                  <div className="flex gap-2">
+                    <input
+                      type="text" value={couponCode} onChange={e => setCouponCode(e.target.value.toUpperCase())}
+                      onKeyDown={e => e.key === 'Enter' && applyCoupon()}
+                      placeholder="Kupon kodu" data-testid="coupon-input"
+                      className="flex-1 bg-[#0a0a0a] border border-[#2a2a2a] text-white placeholder-neutral-700 rounded-xl py-2 px-3 text-xs focus:outline-none focus:border-orange-500 transition-colors"
+                    />
+                    <button onClick={applyCoupon} disabled={couponLoading || !couponCode.trim()} data-testid="coupon-apply-btn"
+                      className="bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold px-3 py-2 rounded-xl transition-all disabled:opacity-50 whitespace-nowrap">
+                      {couponLoading ? '...' : 'Uygula'}
+                    </button>
+                  </div>
+                  {couponError && <p className="text-red-400 text-[10px] mt-1 font-semibold">{couponError}</p>}
+                </div>
+              )}
+
               <div className="flex items-center justify-between pt-2 border-t border-[#3f3f46]">
                 <span className="font-bold text-white">Toplam</span>
-                <span className="text-xl font-black text-orange-500 font-chivo">
-                  {total.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺
-                </span>
+                <div className="text-right">
+                  {coupon && <p className="text-xs text-neutral-600 line-through">{total.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺</p>}
+                  <span className="text-xl font-black text-orange-500 font-chivo" data-testid="checkout-final-total">
+                    {finalTotal.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺
+                  </span>
+                </div>
               </div>
             </div>
           </div>

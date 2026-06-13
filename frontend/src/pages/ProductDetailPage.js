@@ -1,12 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import {
   ChevronRight, ShoppingCart, CheckCircle, Package,
-  ChevronLeft, ChevronRight as ChevronRightIcon, Lock
+  ChevronLeft, ChevronRight as ChevronRightIcon, Lock,
+  Heart, Share2, MessageCircle, Copy, Bell, Check
 } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
+import { useWishlist } from '../contexts/WishlistContext';
 import { getBrandBySlug } from '../constants/categories';
 import ProductCard from '../components/ProductCard';
+import RecentlyViewed, { trackRecentlyViewed } from '../components/RecentlyViewed';
 import { toast } from 'sonner';
 import axios from 'axios';
 
@@ -15,16 +19,54 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const ProductDetailPage = () => {
   const { slug } = useParams();
   const { addItem } = useCart();
+  const { toggle, isWishlisted } = useWishlist();
   const [product, setProduct] = useState(null);
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [error, setError] = useState(null);
+  const [activeImg, setActiveImg] = useState(0);
+  const [notifyEmail, setNotifyEmail] = useState('');
+  const [notifyLoading, setNotifyLoading] = useState(false);
+  const [notifyDone, setNotifyDone] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
 
   useEffect(() => {
     fetchProduct();
     window.scrollTo(0, 0);
   }, [slug]);
+
+  useEffect(() => {
+    if (slug) trackRecentlyViewed(slug);
+  }, [slug]);
+
+  const handleNotify = async () => {
+    if (!notifyEmail.trim()) return;
+    setNotifyLoading(true);
+    try {
+      await axios.post(`${API}/stock-notify`, { product_id: product.id, email: notifyEmail });
+      setNotifyDone(true);
+      toast.success('Bildirim ayarlandı! Stok girince e-posta alacaksınız.');
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Bir hata oluştu');
+    } finally {
+      setNotifyLoading(false);
+    }
+  };
+
+  const handleShare = (type) => {
+    const url = window.location.href;
+    const text = `MotoProf - ${product?.name}`;
+    if (type === 'whatsapp') {
+      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text + '\n' + url)}`, '_blank');
+    } else if (type === 'copy') {
+      navigator.clipboard.writeText(url).then(() => {
+        setCopiedLink(true);
+        toast.success('Link kopyalandı!');
+        setTimeout(() => setCopiedLink(false), 2000);
+      });
+    }
+  };
 
   const fetchProduct = async () => {
     setLoading(true);
@@ -92,6 +134,15 @@ const ProductDetailPage = () => {
 
   return (
     <div className="pt-16 sm:pt-20 pb-28 lg:pb-20" data-testid="product-detail-page">
+      <Helmet>
+        <title>{`${product.name} | MotoProf`}</title>
+        <meta name="description" content={product.description || ''} />
+        <meta property="og:title" content={`${product.name} | MotoProf`} />
+        <meta property="og:description" content={product.description || ''} />
+        <meta property="og:image" content={product.image} />
+        <meta property="og:type" content="product" />
+      </Helmet>
+
       {/* Model hero banner */}
       {modelData?.image && (
         <div className="relative h-28 sm:h-44 overflow-hidden">
@@ -101,7 +152,7 @@ const ProductDetailPage = () => {
       )}
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Breadcrumb — horizontal scroll on mobile */}
+        {/* Breadcrumb */}
         <nav className="flex items-center gap-1.5 py-3 mb-4 overflow-x-auto scrollbar-hide whitespace-nowrap" data-testid="breadcrumb">
           <Link to="/" className="text-[10px] text-neutral-600 hover:text-neutral-400 font-bold uppercase tracking-widest transition-colors flex-shrink-0">Ana Sayfa</Link>
           <ChevronRight size={10} className="text-neutral-700 flex-shrink-0" />
@@ -124,10 +175,14 @@ const ProductDetailPage = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-14 mb-12">
 
-          {/* LEFT: Image */}
+          {/* LEFT: Gallery */}
           <div>
             <div className="relative bg-[#111111] border border-[#1e1e1e] rounded-2xl sm:rounded-3xl overflow-hidden aspect-[4/3]">
-              <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+              <img
+                src={(product.images?.[activeImg]) || product.image}
+                alt={product.name}
+                className="w-full h-full object-cover transition-opacity duration-200"
+              />
               <div className="absolute inset-0 bg-gradient-to-t from-[#111111]/50 via-transparent to-transparent" />
               {discount && (
                 <div className="absolute top-3 left-3 sm:top-4 sm:left-4 bg-orange-500 text-white text-[10px] sm:text-xs font-black px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full tracking-wider">
@@ -140,23 +195,51 @@ const ProductDetailPage = () => {
                 </div>
               )}
             </div>
+            {/* Thumbnail strip */}
+            {product.images?.length > 1 && (
+              <div className="flex gap-2 mt-3">
+                {product.images.map((img, i) => (
+                  <button key={i} onClick={() => setActiveImg(i)}
+                    className={`w-16 h-16 rounded-xl overflow-hidden border-2 transition-all flex-shrink-0 ${activeImg === i ? 'border-orange-500' : 'border-[#1e1e1e] opacity-60 hover:opacity-100'}`}>
+                    <img src={img} alt={`${product.name} ${i + 1}`} className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* RIGHT: Info */}
           <div className="flex flex-col">
-            {/* Brand + category */}
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-[10px] font-black uppercase tracking-widest text-orange-500 bg-orange-500/10 border border-orange-500/20 px-3 py-1 rounded-full">
-                {product.brand}
-              </span>
-              <span className="text-[10px] text-neutral-600 font-semibold uppercase tracking-wider">{product.category}</span>
+            {/* Brand + category + actions */}
+            <div className="flex items-center justify-between gap-2 mb-3">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-black uppercase tracking-widest text-orange-500 bg-orange-500/10 border border-orange-500/20 px-3 py-1 rounded-full">
+                  {product.brand}
+                </span>
+                <span className="text-[10px] text-neutral-600 font-semibold uppercase tracking-wider">{product.category}</span>
+              </div>
+              {/* Wishlist + Share */}
+              <div className="flex items-center gap-1.5">
+                <button onClick={() => toggle(product.id)} data-testid="detail-wishlist-btn"
+                  className="w-8 h-8 flex items-center justify-center rounded-xl bg-[#111] border border-[#1e1e1e] hover:border-red-500/30 transition-all">
+                  <Heart size={14} className={isWishlisted(product.id) ? 'fill-red-500 text-red-500' : 'text-neutral-500'} />
+                </button>
+                <button onClick={() => handleShare('whatsapp')} data-testid="share-whatsapp-btn"
+                  className="w-8 h-8 flex items-center justify-center rounded-xl bg-[#111] border border-[#1e1e1e] hover:border-green-500/30 text-neutral-500 hover:text-green-400 transition-all">
+                  <MessageCircle size={14} />
+                </button>
+                <button onClick={() => handleShare('copy')} data-testid="share-copy-btn"
+                  className="w-8 h-8 flex items-center justify-center rounded-xl bg-[#111] border border-[#1e1e1e] hover:border-orange-500/30 text-neutral-500 hover:text-orange-400 transition-all">
+                  {copiedLink ? <Check size={14} className="text-green-400" /> : <Copy size={14} />}
+                </button>
+              </div>
             </div>
 
             <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-white font-chivo leading-tight mb-4 tracking-tight">
               {product.name}
             </h1>
 
-            {/* Price — mobile compact */}
+            {/* Price */}
             <div className="flex items-center justify-between p-4 bg-[#0d0d0d] border border-[#1a1a1a] rounded-2xl mb-4">
               <div>
                 <p className="text-[10px] text-neutral-600 uppercase tracking-widest mb-0.5">Fiyat</p>
@@ -175,7 +258,6 @@ const ProductDetailPage = () => {
                   </div>
                 )}
               </div>
-              {/* Stock badge */}
               {product.stock > 0 ? (
                 <div className="flex flex-col items-center gap-1 bg-green-500/8 border border-green-500/15 text-green-400 text-[10px] font-bold px-3 py-2 rounded-xl text-center">
                   <CheckCircle size={14} />
@@ -190,7 +272,7 @@ const ProductDetailPage = () => {
               )}
             </div>
 
-            {/* Compatibility card */}
+            {/* Compatibility */}
             <div className="bg-[#0d0d0d] border border-[#1a1a1a] rounded-2xl p-4 mb-4">
               <p className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-600 mb-2.5">Uyumlu Araç</p>
               <div className="flex items-center gap-3">
@@ -208,8 +290,8 @@ const ProductDetailPage = () => {
               </div>
             </div>
 
-            {/* Quantity + Cart — DESKTOP ONLY (mobile uses sticky bar) */}
-            {product.stock > 0 && (
+            {/* Desktop Cart */}
+            {product.stock > 0 ? (
               <div className="hidden lg:flex items-center gap-3 mb-5">
                 <div className="flex items-center bg-[#0d0d0d] border border-[#1e1e1e] rounded-xl overflow-hidden h-[50px]">
                   <button onClick={() => setQuantity(q => Math.max(1, q - 1))} data-testid="quantity-dec"
@@ -227,6 +309,29 @@ const ProductDetailPage = () => {
                   <ShoppingCart size={16} />
                   Sepete Ekle
                 </button>
+              </div>
+            ) : (
+              /* Stock notification */
+              <div className="hidden lg:block bg-[#0d0d0d] border border-[#1a1a1a] rounded-2xl p-4 mb-5">
+                <div className="flex items-center gap-2 mb-3">
+                  <Bell size={14} className="text-orange-500" />
+                  <p className="text-xs font-bold text-white">Stok Girişini Haber Ver</p>
+                </div>
+                {notifyDone ? (
+                  <div className="flex items-center gap-2 text-green-400 text-sm font-semibold">
+                    <Check size={14} /> Bildirim ayarlandı!
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <input type="email" value={notifyEmail} onChange={e => setNotifyEmail(e.target.value)}
+                      placeholder="E-posta adresiniz" data-testid="notify-email-input"
+                      className="flex-1 bg-[#0a0a0a] border border-[#252525] rounded-xl px-3 py-2.5 text-sm text-white placeholder-neutral-700 focus:outline-none focus:border-orange-500/50 transition-colors" />
+                    <button onClick={handleNotify} disabled={notifyLoading} data-testid="notify-submit-btn"
+                      className="bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all disabled:opacity-60 whitespace-nowrap">
+                      {notifyLoading ? '...' : 'Haber Ver'}
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 
@@ -260,7 +365,7 @@ const ProductDetailPage = () => {
 
         {/* Related Products */}
         {relatedProducts.length > 0 && (
-          <section className="mb-4">
+          <section className="mb-8">
             <div className="flex items-center justify-between mb-5">
               <div>
                 <span className="section-label mb-1.5 block">Aynı Model</span>
@@ -282,14 +387,16 @@ const ProductDetailPage = () => {
             </div>
           </section>
         )}
+
+        {/* Recently Viewed */}
+        <RecentlyViewed currentSlug={slug} />
       </div>
 
-      {/* ── MOBİL STICKY BOTTOM BAR ── */}
-      {product.stock > 0 && (
+      {/* MOBİL STICKY BOTTOM BAR */}
+      {product.stock > 0 ? (
         <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0a0a0a]/95 backdrop-blur-xl border-t border-[#1e1e1e] px-4 py-3 safe-area-bottom"
           style={{ boxShadow: '0 -4px 30px rgba(0,0,0,0.5), 0 -1px 0 rgba(249,115,22,0.1)' }}>
           <div className="flex items-center gap-3 max-w-lg mx-auto">
-            {/* Adet kontrol */}
             <div className="flex items-center bg-[#111] border border-[#2a2a2a] rounded-xl overflow-hidden h-12 flex-shrink-0">
               <button onClick={() => setQuantity(q => Math.max(1, q - 1))}
                 className="px-3 h-full text-neutral-500 active:bg-white/5 transition-colors">
@@ -301,8 +408,6 @@ const ProductDetailPage = () => {
                 <ChevronRightIcon size={15} />
               </button>
             </div>
-
-            {/* Fiyat + Sepete Ekle */}
             <button onClick={handleAddToCart} data-testid="product-detail-add-to-cart-mobile"
               className="flex-1 flex items-center justify-between gap-2 bg-orange-500 active:bg-orange-600 text-white font-bold h-12 px-4 rounded-xl transition-all active:scale-[0.98] shadow-[0_0_20px_rgba(249,115,22,0.35)]">
               <span className="text-sm font-black font-chivo">
@@ -314,6 +419,25 @@ const ProductDetailPage = () => {
               </span>
             </button>
           </div>
+        </div>
+      ) : (
+        /* Mobil stok bildirimi */
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0a0a0a]/95 backdrop-blur-xl border-t border-[#1e1e1e] px-4 py-3">
+          {notifyDone ? (
+            <div className="flex items-center justify-center gap-2 text-green-400 font-semibold text-sm h-12">
+              <Check size={16} /> Bildirim ayarlandı!
+            </div>
+          ) : (
+            <div className="flex gap-2">
+              <input type="email" value={notifyEmail} onChange={e => setNotifyEmail(e.target.value)}
+                placeholder="E-posta: Stok girince haber ver" data-testid="notify-email-input-mobile"
+                className="flex-1 bg-[#111] border border-[#2a2a2a] rounded-xl px-3 h-12 text-sm text-white placeholder-neutral-700 focus:outline-none focus:border-orange-500/50" />
+              <button onClick={handleNotify} disabled={notifyLoading} data-testid="notify-submit-mobile"
+                className="bg-orange-500 text-white text-xs font-bold px-4 rounded-xl h-12 whitespace-nowrap">
+                {notifyLoading ? '...' : <Bell size={16} />}
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>
