@@ -58,10 +58,12 @@ Renk: #f97316 (turuncu). Mobil öncelikli, SEO uyumlu, Türkçe.
 - [ ] Dashboard (satış istatistikleri)
 
 ### P1 — E-Ticaret Geliştirmeleri
+- [x] Live search dropdown (ürün önizlemeli) ✅
+- [x] Misafir checkout ✅
+- [x] Çok kelimeli arama algoritması ✅
 - [ ] Ödeme entegrasyonu (iyzico / PayTR)
 - [ ] Kargo takip entegrasyonu
 - [ ] Ürün görsel galerisi (çoklu fotoğraf)
-- [ ] Ürün arama (backend full-text search)
 - [ ] Stok bildirimi (e-posta)
 
 ### P2 — SEO & Performance
@@ -74,5 +76,5 @@ Renk: #f97316 (turuncu). Mobil öncelikli, SEO uyumlu, Türkçe.
 ## Next Tasks
 1. Admin paneli (Faz 2) — admin.motoprof.com.tr
 2. Ödeme entegrasyonu (iyzico önerilen)
-3. Çoklu ürün görseli
+3. WhatsApp numarasını gerçek numara ile güncelle (`WhatsAppButton.js` → `WHATSAPP_NUMBER`)
 4. PWA manifest + service worker

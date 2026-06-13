@@ -1,12 +1,24 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Trash2, Plus, Minus, ShoppingCart, ArrowRight } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
+import { useAuth } from '../contexts/AuthContext';
 import { CART } from '../constants/testIds';
+import CheckoutAuthModal from '../components/CheckoutAuthModal';
 
 const CartPage = () => {
   const { items, removeItem, updateQuantity, clearCart, total, itemCount } = useCart();
+  const { user } = useAuth();
   const navigate = useNavigate();
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
+  const handleCheckout = () => {
+    if (user) {
+      navigate('/odeme');
+    } else {
+      setShowAuthModal(true);
+    }
+  };
 
   if (items.length === 0) {
     return (
@@ -30,6 +42,12 @@ const CartPage = () => {
 
   return (
     <div className="pt-20 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-16" data-testid={CART.page}>
+      {showAuthModal && (
+        <CheckoutAuthModal
+          onClose={() => setShowAuthModal(false)}
+          onGuest={() => { setShowAuthModal(false); navigate('/odeme'); }}
+        />
+      )}
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-black text-white font-chivo">Sepetim</h1>
@@ -136,7 +154,7 @@ const CartPage = () => {
             </div>
 
             <button
-              onClick={() => navigate('/odeme')}
+              onClick={handleCheckout}
               data-testid={CART.checkoutBtn}
               className="w-full flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-lg transition-colors text-sm uppercase tracking-wider active:scale-95"
             >

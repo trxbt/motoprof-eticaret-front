@@ -14,7 +14,6 @@ function formatError(detail) {
 }
 
 const AuthPage = () => {
-  const [mode, setMode] = useState('login');
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -24,7 +23,8 @@ const AuthPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const redirect = searchParams.get('redirect') || '/';
-
+  const initMode = searchParams.get('mode') === 'register' ? 'register' : 'login';
+  const [mode, setMode] = useState(initMode);
   const [form, setForm] = useState({ name: '', email: '', password: '', confirmPassword: '', phone: '' });
 
   const handleChange = (e) => {
