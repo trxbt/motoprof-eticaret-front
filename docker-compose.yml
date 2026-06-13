@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+
+  # ── MongoDB ──────────────────────────────────────────────────
+  mongodb:
+    image: mongo:7
+    restart: always
+    volumes:
+      - mongo_data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: motoprof
+    networks:
+      - motoprof_net
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  # ── Backend (FastAPI) ─────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+    restart: always
+    environment:
+      MONGO_URL: mongodb://mongodb:27017
+      DB_NAME: motoprof
+      JWT_SECRET: ${JWT_SECRET}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      CORS_ORIGINS: ${SITE_URL},http://localhost:3000
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - motoprof_net
+
+  # ── Frontend (React + Nginx) ──────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        REACT_APP_BACKEND_URL: ${SITE_URL}
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - motoprof_net
+
+networks:
+  motoprof_net:
+    driver: bridge
+
+volumes:
+  mongo_data:
+    driver: local
