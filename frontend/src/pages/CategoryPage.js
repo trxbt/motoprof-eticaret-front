@@ -1,0 +1,263 @@
+import React, { useState, useEffect, useCallback } from 'react';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { ChevronRight, SlidersHorizontal, X, Search } from 'lucide-react';
+import ProductCard from '../components/ProductCard';
+import { BRANDS, PARTS_CATEGORIES, getBrandBySlug, getModelBySlug } from '../constants/categories';
+import axios from 'axios';
+
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+
+const CategoryPage = () => {
+  const { brand: brandSlug, model: modelSlug } = useParams();
+  const [searchParams] = useSearchParams();
+  const searchQuery = searchParams.get('search') || '';
+  const categoryFilter = searchParams.get('category') || '';
+
+  const brandData = brandSlug ? getBrandBySlug(brandSlug) : null;
+  const modelData = modelSlug ? getModelBySlug(brandSlug, modelSlug) : null;
+
+  const [products, setProducts] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState(categoryFilter);
+  const [selectedBrandFilter, setSelectedBrandFilter] = useState(brandData?.name || '');
+  const [page, setPage] = useState(1);
+  const [showFilters, setShowFilters] = useState(false);
+  const LIMIT = 12;
+
+  const fetchProducts = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (brandData) params.set('brand', brandData.name);
+      if (modelData) params.set('model_id', modelData.id);
+      if (selectedCategory) params.set('category', selectedCategory);
+      if (searchQuery) params.set('search', searchQuery);
+      params.set('limit', LIMIT);
+      params.set('skip', (page - 1) * LIMIT);
+      const { data } = await axios.get(`${API}/products?${params}`);
+      setProducts(data.products || []);
+      setTotal(data.total || 0);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }, [brandData, modelData, selectedCategory, searchQuery, page]);
+
+  useEffect(() => {
+    fetchProducts();
+    window.scrollTo(0, 0);
+  }, [fetchProducts]);
+
+  useEffect(() => {
+    let title = 'MotoProf - Tüm Ürünler';
+    if (modelData) title = `${modelData.full_name} Parçaları - MotoProf`;
+    else if (brandData) title = `${brandData.name} Parçaları - MotoProf`;
+    document.title = title;
+  }, [brandData, modelData]);
+
+  const handleCategorySelect = (cat) => {
+    setSelectedCategory(cat === selectedCategory ? '' : cat);
+    setPage(1);
+    setShowFilters(false);
+  };
+
+  const totalPages = Math.ceil(total / LIMIT);
+
+  const breadcrumbs = [
+    { label: 'Ana Sayfa', href: '/' },
+    { label: 'Moto Parçaları', href: '/urunler' },
+  ];
+  if (brandData) breadcrumbs.push({ label: brandData.name, href: `/urunler/${brandSlug}` });
+  if (modelData) breadcrumbs.push({ label: modelData.full_name.replace(`${brandData?.name} `, ''), href: `/urunler/${brandSlug}/${modelSlug}` });
+  if (selectedCategory) breadcrumbs.push({ label: selectedCategory, href: null });
+
+  const FilterSidebar = () => (
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-xs font-bold uppercase tracking-widest text-neutral-400 mb-3">Parça Kategorisi</h3>
+        <div className="space-y-1">
+          <button
+            onClick={() => handleCategorySelect('')}
+            className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${!selectedCategory ? 'bg-orange-500 text-white font-semibold' : 'text-neutral-300 hover:text-white hover:bg-[#262626]'}`}
+          >
+            Tümü
+          </button>
+          {PARTS_CATEGORIES.map(cat => (
+            <button
+              key={cat}
+              onClick={() => handleCategorySelect(cat)}
+              data-testid={`filter-category-${cat}`}
+              className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${selectedCategory === cat ? 'bg-orange-500 text-white font-semibold' : 'text-neutral-300 hover:text-white hover:bg-[#262626]'}`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+      </div>
+      {!brandSlug && (
+        <div>
+          <h3 className="text-xs font-bold uppercase tracking-widest text-neutral-400 mb-3">Marka</h3>
+          <div className="space-y-1">
+            {BRANDS.map(b => (
+              <Link
+                key={b.id}
+                to={`/urunler/${b.slug}`}
+                className="flex items-center justify-between px-3 py-2 rounded-lg text-sm text-neutral-300 hover:text-white hover:bg-[#262626] transition-colors"
+                data-testid={`filter-brand-${b.id}`}
+              >
+                <span>{b.name}</span>
+                <span className="text-xs text-neutral-500">{b.models.length} model</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+      {brandData && (
+        <div>
+          <h3 className="text-xs font-bold uppercase tracking-widest text-neutral-400 mb-3">Model</h3>
+          <div className="space-y-1">
+            {brandData.models.map(m => (
+              <Link
+                key={m.id}
+                to={`/urunler/${brandSlug}/${m.slug}`}
+                data-testid={`filter-model-${m.id}`}
+                className={`block px-3 py-2 rounded-lg text-sm transition-colors ${modelData?.id === m.id ? 'text-orange-500 font-semibold bg-orange-500/10' : 'text-neutral-300 hover:text-white hover:bg-[#262626]'}`}
+              >
+                {m.full_name}
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  return (
+    <div className="pt-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+      {/* Breadcrumb */}
+      <nav className="flex items-center gap-1.5 mb-6 flex-wrap" data-testid="breadcrumb">
+        {breadcrumbs.map((crumb, i) => (
+          <React.Fragment key={i}>
+            {i > 0 && <ChevronRight size={14} className="text-neutral-600 flex-shrink-0" />}
+            {crumb.href ? (
+              <Link to={crumb.href} className="text-xs text-neutral-400 hover:text-orange-400 transition-colors font-semibold uppercase tracking-wider">
+                {crumb.label}
+              </Link>
+            ) : (
+              <span className="text-xs text-orange-400 font-semibold uppercase tracking-wider">{crumb.label}</span>
+            )}
+          </React.Fragment>
+        ))}
+      </nav>
+
+      {/* Page title */}
+      <div className="mb-6">
+        <h1 className="text-2xl sm:text-3xl font-black text-white font-chivo">
+          {searchQuery ? `"${searchQuery}" için arama sonuçları` :
+           modelData ? modelData.full_name :
+           brandData ? `${brandData.name} Parçaları` :
+           'Tüm Ürünler'}
+        </h1>
+        <p className="text-neutral-400 text-sm mt-1">{total} ürün bulundu</p>
+      </div>
+
+      <div className="flex gap-6">
+        {/* Sidebar (Desktop) */}
+        <aside className="hidden lg:block w-56 flex-shrink-0">
+          <div className="bg-[#171717] border border-[#3f3f46] rounded-xl p-4 sticky top-24">
+            <FilterSidebar />
+          </div>
+        </aside>
+
+        {/* Main Content */}
+        <div className="flex-1 min-w-0">
+          {/* Mobile filter toggle */}
+          <div className="flex items-center justify-between mb-4 lg:hidden">
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              data-testid="toggle-filters-btn"
+              className="flex items-center gap-2 px-4 py-2 bg-[#171717] border border-[#3f3f46] rounded-lg text-sm text-neutral-300 hover:text-white transition-colors"
+            >
+              <SlidersHorizontal size={16} />
+              Filtreler
+              {selectedCategory && <span className="w-2 h-2 bg-orange-500 rounded-full" />}
+            </button>
+          </div>
+
+          {/* Mobile filters */}
+          {showFilters && (
+            <div className="lg:hidden mb-4 bg-[#171717] border border-[#3f3f46] rounded-xl p-4">
+              <div className="flex items-center justify-between mb-4">
+                <span className="font-semibold text-white">Filtreler</span>
+                <button onClick={() => setShowFilters(false)} className="text-neutral-400 hover:text-white">
+                  <X size={18} />
+                </button>
+              </div>
+              <FilterSidebar />
+            </div>
+          )}
+
+          {/* Products Grid */}
+          {loading ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
+              {[...Array(12)].map((_, i) => (
+                <div key={i} className="bg-[#171717] border border-[#3f3f46] rounded-xl overflow-hidden animate-pulse">
+                  <div className="bg-[#262626] h-40" />
+                  <div className="p-4 space-y-2">
+                    <div className="h-3 bg-[#262626] rounded w-1/3" />
+                    <div className="h-4 bg-[#262626] rounded" />
+                    <div className="h-4 bg-[#262626] rounded w-3/4" />
+                    <div className="h-8 bg-[#262626] rounded mt-2" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : products.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 text-center" data-testid="no-products">
+              <div className="p-4 bg-[#171717] rounded-full mb-4">
+                <Search size={32} className="text-neutral-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-white mb-2">Ürün Bulunamadı</h3>
+              <p className="text-neutral-400 text-sm">Bu kriterlere uygun ürün bulunmuyor.</p>
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4" data-testid="products-grid">
+                {products.map(product => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-2 mt-8">
+                  <button
+                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                    disabled={page === 1}
+                    className="px-4 py-2 text-sm bg-[#171717] border border-[#3f3f46] rounded-lg text-neutral-300 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  >
+                    Önceki
+                  </button>
+                  <span className="text-sm text-neutral-400">
+                    {page} / {totalPages}
+                  </span>
+                  <button
+                    onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                    disabled={page === totalPages}
+                    className="px-4 py-2 text-sm bg-[#171717] border border-[#3f3f46] rounded-lg text-neutral-300 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  >
+                    Sonraki
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default CategoryPage;

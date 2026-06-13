@@ -1,34 +1,57 @@
-.App-logo {
-    height: 40vmin;
-    pointer-events: none;
+/* Global App Styles */
+.App {
+  min-height: 100vh;
+  background-color: #0a0a0a;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-    .App-logo {
-        animation: App-logo-spin infinite 20s linear;
-    }
+/* Product card hover */
+.product-card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.product-card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 40px rgba(249, 115, 22, 0.1);
 }
 
-.App-header {
-    background-color: #0f0f10;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-size: calc(10px + 2vmin);
-    color: white;
+/* Hero gradient overlay */
+.hero-overlay {
+  background: linear-gradient(
+    to bottom,
+    rgba(10, 10, 10, 0.3) 0%,
+    rgba(10, 10, 10, 0.6) 60%,
+    rgba(10, 10, 10, 0.9) 100%
+  );
 }
 
-.App-link {
-    color: #61dafb;
+/* Embla Carousel */
+.embla {
+  overflow: hidden;
+}
+.embla__container {
+  display: flex;
+}
+.embla__slide {
+  flex: 0 0 100%;
+  min-width: 0;
 }
 
-@keyframes App-logo-spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
+/* Orange glow button */
+.btn-primary {
+  background-color: #f97316;
+  color: white;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+.btn-primary:hover {
+  background-color: #ea580c;
+}
+.btn-primary:active {
+  transform: scale(0.95);
+}
+
+/* Section divider */
+.section-divider {
+  border-color: #3f3f46;
 }
