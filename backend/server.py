@@ -196,12 +196,20 @@ async def get_products(
     if featured is not None:
         query["is_featured"] = featured
     if search:
-        query["$or"] = [
-            {"name": {"$regex": search, "$options": "i"}},
-            {"brand": {"$regex": search, "$options": "i"}},
-            {"model": {"$regex": search, "$options": "i"}},
-            {"category": {"$regex": search, "$options": "i"}},
-        ]
+        terms = [t.strip() for t in search.split() if t.strip()]
+        fields = ["name", "brand", "model", "category", "description"]
+        if len(terms) == 1:
+            # Tek kelime: herhangi bir alanda eşleşsin
+            query["$or"] = [
+                {field: {"$regex": terms[0], "$options": "i"}} for field in fields
+            ]
+        else:
+            # Çok kelime: HER kelime en az bir alanda eşleşmeli (AND mantığı)
+            query["$and"] = [
+                {"$or": [
+                    {field: {"$regex": term, "$options": "i"}} for field in fields
+                ]} for term in terms
+            ]
     total = await db.products.count_documents(query)
     products = await db.products.find(query).skip(skip).limit(limit).to_list(limit)
     return {"products": [serialize_product(p) for p in products], "total": total, "limit": limit, "skip": skip}
