@@ -15,7 +15,7 @@ const WhatsAppButton = () => {
   const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(WHATSAPP_MESSAGE)}`;
 
   return (
-    <div className="fixed bottom-24 sm:bottom-8 right-4 sm:right-6 z-[9990] flex flex-col items-end gap-2">
+    <div className="fixed bottom-24 sm:bottom-8 right-4 sm:right-6 z-[50] flex flex-col items-end gap-2">
 
       {/* Tooltip balonu */}
       {showTooltip && !dismissed && (
