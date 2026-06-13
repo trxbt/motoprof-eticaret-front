@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Phone, Mail, MapPin, Instagram, Youtube, Facebook, ArrowRight } from 'lucide-react';
+import { Phone, Mail, MapPin, Instagram, Youtube, Facebook, ArrowRight, Shield, Lock } from 'lucide-react';
 import { BRANDS } from '../constants/categories';
 
 const Footer = () => {
@@ -115,6 +115,81 @@ const Footer = () => {
               <p className="text-sm font-bold text-white">Pzt – Cum  /  09:00 – 18:00</p>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Payment & Security Section */}
+      <div className="border-t border-white/4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-5">
+
+            {/* Kabul edilen ödeme yöntemleri */}
+            <div className="flex flex-col items-center sm:items-start gap-2.5">
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-700">Kabul Edilen Ödeme Yöntemleri</p>
+              <div className="flex items-center gap-2 flex-wrap justify-center sm:justify-start">
+                {/* Visa */}
+                <div className="h-7 px-3 bg-[#1a1fe8] rounded-md flex items-center justify-center">
+                  <span className="text-white font-black text-xs italic tracking-wider">VISA</span>
+                </div>
+                {/* Mastercard */}
+                <div className="h-7 px-2.5 bg-[#111] border border-white/10 rounded-md flex items-center gap-1.5">
+                  <div className="relative flex items-center">
+                    <div className="w-4 h-4 rounded-full bg-[#EB001B]" />
+                    <div className="w-4 h-4 rounded-full bg-[#F79E1B] -ml-2 opacity-90" />
+                  </div>
+                  <span className="text-white text-[9px] font-semibold">mastercard</span>
+                </div>
+                {/* Troy */}
+                <div className="h-7 px-3 bg-[#0033a0] rounded-md flex items-center gap-1">
+                  <span className="text-white font-black text-xs tracking-widest">TROY</span>
+                </div>
+                {/* Amex */}
+                <div className="h-7 px-3 bg-[#016FD0] rounded-md flex items-center">
+                  <span className="text-white font-black text-[10px] tracking-wider">AMEX</span>
+                </div>
+                {/* Banka Havalesi */}
+                <div className="h-7 px-3 bg-[#111] border border-white/8 rounded-md flex items-center">
+                  <span className="text-neutral-400 font-semibold text-[10px] tracking-wide">Havale / EFT</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Güvenlik rozeti */}
+            <div className="flex items-center gap-2 flex-wrap justify-center">
+              {/* iyzico */}
+              <div className="flex items-center gap-2 px-3 py-2 bg-[#0d0d0d] border border-white/6 rounded-xl">
+                <div className="w-6 h-6 rounded-lg bg-[#1677FF] flex items-center justify-center flex-shrink-0">
+                  <span className="text-white text-[9px] font-black">iy</span>
+                </div>
+                <div>
+                  <p className="text-[9px] text-neutral-600 leading-none mb-0.5">Güvenli Ödeme</p>
+                  <p className="text-[11px] text-white font-black leading-none tracking-wide">iyzico</p>
+                </div>
+              </div>
+              {/* 3D Secure */}
+              <div className="flex items-center gap-2 px-3 py-2 bg-[#0d0d0d] border border-white/6 rounded-xl">
+                <Shield size={15} className="text-green-500 flex-shrink-0" />
+                <div>
+                  <p className="text-[9px] text-neutral-600 leading-none mb-0.5">Koruma</p>
+                  <p className="text-[11px] text-white font-black leading-none">3D Secure</p>
+                </div>
+              </div>
+              {/* SSL */}
+              <div className="flex items-center gap-2 px-3 py-2 bg-[#0d0d0d] border border-white/6 rounded-xl">
+                <Lock size={15} className="text-orange-500 flex-shrink-0" />
+                <div>
+                  <p className="text-[9px] text-neutral-600 leading-none mb-0.5">Şifreleme</p>
+                  <p className="text-[11px] text-white font-black leading-none">256-bit SSL</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* iyzico zorunlu açıklama metni */}
+          <p className="text-[10px] text-neutral-700 mt-4 text-center border-t border-white/4 pt-4">
+            Ödeme işlemleri <span className="text-neutral-500 font-semibold">iyzico</span> güvencesiyle gerçekleştirilmektedir.
+            Kart bilgileriniz tarafımızca saklanmamakta; tüm işlemler 256-bit SSL şifrelemesiyle korunmaktadır.
+          </p>
         </div>
       </div>
 
