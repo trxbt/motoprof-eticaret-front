@@ -25,13 +25,13 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     const { data } = await axios.post(`${API}/auth/login`, { email, password }, { withCredentials: true });
-    setUser(data);
+    setUser(data.user || data);
     return data;
   };
 
   const register = async (name, email, password, phone) => {
     const { data } = await axios.post(`${API}/auth/register`, { name, email, password, phone }, { withCredentials: true });
-    setUser(data);
+    setUser(data.user || data);
     return data;
   };
 
