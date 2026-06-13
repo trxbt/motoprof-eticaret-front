@@ -19,7 +19,7 @@ router = APIRouter(prefix="/payments", tags=["payments"])
 IYZICO_OPTIONS = {
     "api_key":    os.environ.get("IYZICO_API_KEY"),
     "secret_key": os.environ.get("IYZICO_SECRET_KEY"),
-    "base_url":   os.environ.get("IYZICO_BASE_URL", "https://sandbox-api.iyzipay.com"),
+    "base_url":   os.environ.get("IYZICO_BASE_URL", "sandbox-api.iyzipay.com"),
 }
 FRONTEND_URL = os.environ.get("FRONTEND_URL", "https://motoprof-preview.preview.emergentagent.com")
 

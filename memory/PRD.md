@@ -1,91 +1,106 @@
-# MotoProf - PRD (Product Requirements Document)
+# MotoProf — PRD
 
-## Problem Statement
-Motosiklet yedek parça e-ticaret sitesi. Marka adı: MotoProf - Motorcycle Spare Parts.
-Renk: #f97316 (turuncu). Mobil öncelikli, SEO uyumlu, Türkçe.
+## Problem Tanımı
+motoprof.com.tr için motosiklet yedek parça e-ticaret sitesi. Hedef: premium dark UI (glassmorphism), mobil-first, 100% SEO uyumlu. Honda, Yamaha, CF Moto, Bajaj markalarına özel model bazlı arama.
 
-## Architecture
-- **Frontend**: React 18 + React Router v7 + Tailwind CSS + Shadcn UI + react-helmet-async
-- **Backend**: FastAPI + MongoDB + PyJWT + bcrypt
-- **Hosting**: Kubernetes pod (frontend:3000, backend:8001)
+## Teknoloji Stack
+- **Frontend**: React, TailwindCSS, Shadcn UI, Context API, PWA
+- **Backend**: FastAPI + PostgreSQL (SQLAlchemy + asyncpg) — MongoDB'den migrate edildi
+- **Auth**: Cookie-tabanlı JWT (HttpOnly, samesite=lax)
+- **Ödeme**: iyzico sandbox entegrasyonu (gerçek API)
+- **Deployment**: Docker Compose + Nginx + Coolify
 
-## Categories
-- HONDA: PCX 125 (15-17), PCX 125 (18-20), PCX 125 (21-24), DIO 110 (21-24), CBF 150, FORZA 250, ACTIVA 125
-- YAMAHA: NMAX 125, NMAX 155, XMAX 250
-- CF MOTO: NK250, 250SR
-- BAJAJ: NS200
+## Mimari (Refaktör Edilmiş)
+```
+/app/
+├── backend/
+│   ├── server.py          # Uygulama init (ince)
+│   ├── config.py          # JWT utils, bcrypt
+│   ├── database.py        # SQLAlchemy engine, session
+│   ├── deps.py            # Auth dependency injection
+│   ├── serializers.py     # DB → dict dönüştürücüler
+│   ├── seed.py            # Demo veri + admin seed
+│   ├── models/
+│   │   ├── __init__.py
+│   │   └── models.py      # SQLAlchemy modelleri
+│   ├── schemas/
+│   │   ├── __init__.py
+│   │   └── schemas.py     # Pydantic şemalar
+│   └── routes/
+│       ├── __init__.py
+│       ├── auth.py        # /auth/*
+│       ├── products.py    # /products
+│       ├── orders.py      # /orders
+│       ├── wishlist.py    # /wishlist
+│       ├── coupons.py     # /coupons
+│       ├── payments.py    # /payments/iyzico/*
+│       └── misc.py        # /stock-notify, /sitemap.xml
+├── frontend/
+│   ├── src/
+│   │   ├── pages/
+│   │   │   ├── PaymentResultPage.js  (yeni - /odeme-sonuc)
+│   │   │   └── CheckoutPage.js       (iyzico entegre)
+│   │   ├── contexts/      # Auth, Cart, Wishlist
+│   │   └── components/    # PWAInstallBanner, WishlistButton, RecentlyViewed
+│   └── public/            # manifest.json, sw.js, icons
+└── docker-compose.yml, DEPLOYMENT.md, nginx.conf
+```
 
-## What's Been Implemented
+## DB Şeması (PostgreSQL)
+- `users`: {id, email, password_hash, name, role, created_at}
+- `products`: {id, slug, name, price, original_price, image, images[], brand, model, model_id, year_range, category, stock, sku, oem_kodu, is_featured}
+- `orders`: {id, user_id, guest_email, total, shipping_*, status, payment_status, iyzico_token, coupon_code, discount, invoice{}}
+- `order_items`: {id, order_id, product_id, product_name, product_image, price, quantity}
+- `wishlists`: {id, user_id, product_id}
+- `coupons`: {id, code, type(percent/fixed), value, min_order, active}
+- `stock_notifications`: {id, product_id, email, notified}
 
-### Backend (server.py)
-- [x] JWT auth: register, login, logout, me, refresh
-- [x] Products: list (filtered + multi-word search by name/brand/model/sku/oem_kodu), detail by slug
-- [x] Orders: create (guest + invoice + coupon support), list by user, detail
-- [x] Coupons: validate endpoint (MOTO10 %10, ILKALIS %15, KARGO50 50₺ sabit, WELCOME %10)
-- [x] Wishlist: GET + toggle (per-user MongoDB)
-- [x] Stock notifications: subscribe endpoint (e-mail validation)
-- [x] Sitemap: GET /api/sitemap.xml (dynamic, tüm ürün slug'ları)
-- [x] Auto-seed: admin + 25 demo products + 4 coupons + images migration on startup
+## Key API Endpoints
+- `GET /api/products` — paginated + search (ILIKE multi-word, SKU, OEM)
+- `GET /api/products/{slug}` — ürün detayı
+- `POST /api/auth/register|login|logout` — cookie-based JWT
+- `GET /api/auth/me` — current user
+- `POST /api/orders` — sipariş oluştur (mock/test)
+- `POST /api/payments/iyzico/initialize` — iyzico CF başlat (order oluştur + iyzico)
+- `POST /api/payments/iyzico/callback` — iyzico sonuç + redirect
+- `POST /api/coupons/validate` — kupon doğrula
+- `GET /api/wishlist` + `POST /api/wishlist/toggle`
+- `POST /api/stock-notify`
+- `GET /api/sitemap.xml`
 
-### Frontend Pages
-- [x] Anasayfa — Hero Slider + Stats + SearchEngine + Brand Cards + Featured Products
-- [x] Kategori Sayfası — Filtre sidebar, ürün grid, pagination
-- [x] Ürün Detay — Galeri (çoklu foto + thumbnail), favorilere ekle, WhatsApp/kopyala paylaş, stok bildirimi formu, son görüntülenenler, SEO helmet
-- [x] Sepet — localStorage, adet yönetimi
-- [x] Checkout — Kupon kodu, fatura bilgileri, misafir checkout, mock ödeme
-- [x] Favoriler Sayfası (/favoriler) — localStorage + DB sync
-- [x] Giriş/Kayıt, Profil
+## Tamamlanan Özellikler
+- [x] Phase 1: Homepage, Category pages, Product Detail, Cart, Checkout, Auth (login/signup)
+- [x] Brand + Model arama (Honda, Yamaha, CF Moto, Bajaj)
+- [x] Multi-word regex search + OEM/SKU arama
+- [x] Wishlist (Favoriler)
+- [x] Kupon kodları (MOTO10, ILKALIS, KARGO50, WELCOME)
+- [x] Stok bildirimi (email)
+- [x] Recently Viewed (son görüntülenen ürünler)
+- [x] Social Share butonları
+- [x] Multi-image gallery (ürün fotoğrafları)
+- [x] SEO (react-helmet + sitemap.xml + robots.txt)
+- [x] PWA (manifest.json, service worker, install banner)
+- [x] iyzico footer güvenlik rozetleri
+- [x] MongoDB → PostgreSQL migration (SQLAlchemy + asyncpg)
+- [x] server.py refaktörü (routes/models/schemas/seed.py)
+- [x] **iyzico Sandbox ödeme entegrasyonu** (gerçek iyzico API)
+- [x] PaymentResultPage (/odeme-sonuc?status=success|failed)
+- [x] Coolify deployment dosyaları (docker-compose.yml, Dockerfiles, nginx.conf)
+- [x] CORS düzeltmesi
 
-### Components
-- [x] Navbar: Live search overlay, favori kalp ikonu (badge sayı), mobil drawer menü
-- [x] WishlistContext + WishlistButton (her ürün kartında kalp ikonu)
-- [x] RecentlyViewed (son görüntülenen ürünler)
-- [x] PWAInstallBanner (beforeinstallprompt yakalama)
-- [x] CustomCursor (turuncu, sadece desktop)
-- [x] WhatsAppButton (z-index 50, sepet/ödeme sayfasında gizli)
-- [x] Footer: iyzico ödeme bölümü (Visa, MC, Troy, Amex, SSL, 3D Secure)
+## Bekleyen / Gelecek Görevler
+### P1 (Önemli)
+- [ ] iyzico Production anahtarları ile canlıya geçiş
+- [ ] Gerçek ürün kataloğu (admin panelden eklenecek)
 
-### PWA & SEO
-- [x] manifest.json (theme #f97316, standalone, PNG ikonlar)
-- [x] Service Worker (cache-first static, network-first API)
-- [x] robots.txt (sitemap referansı)
-- [x] react-helmet-async (ProductDetailPage, geliştirilecek)
+### P2 (Gelecek Fazlar)
+- [ ] Admin Paneli — ayrı Emergent projesi (bu backend'e bağlanır)
+- [ ] Sipariş takip e-postası (SendGrid/SMTP)
+- [ ] Müşteri hesap sayfası geliştirme (sipariş geçmişi detayı)
+- [ ] Ürün yorumları + puanlama sistemi
+- [ ] Google Analytics / Meta Pixel entegrasyonu
 
-### Product Fields
-- sku, oem_kodu: arama algoritmasına dahil
-- images[]: galeri dizisi (migration ile 3 foto/ürün)
-
-## Test Credentials
-- Admin: admin@motoprof.com / Admin123!
-- Test user: /app/memory/test_credentials.md
-
-## Demo Coupon Codes
-- MOTO10: %10 indirim (min 200₺)
-- ILKALIS: %15 indirim (min 0₺)
-- KARGO50: 50₺ sabit indirim (min 500₺)
-- WELCOME: %10 indirim (min 0₺)
-
-## Prioritized Backlog
-
-### P0 — Admin Paneli (Faz 2 — Ayrı Emergent Projesi)
-- [ ] admin.motoprof.com.tr → ayrı Emergent projesi
-- [ ] Ürün CRUD (ekle, düzenle, sil, resim yükleme)
-- [ ] Sipariş yönetimi (durum güncelleme: Beklemede → Kargoya Verildi → Teslim)
-- [ ] Kullanıcı yönetimi
-- [ ] Dashboard (satış istatistikleri, gelir grafiği)
-- [ ] Stok uyarı sistemi + stock notification tetikleyici
-
-### P1 — Ödeme Entegrasyonu
-- [ ] iyzico veya PayTR entegrasyonu (şu an mock)
-- [ ] Kargo takip entegrasyonu
-
-### P2 — SEO & UX
-- [ ] react-helmet tüm sayfalara (CategoryPage, HomePage, AuthPage)
-- [ ] Ürün yorumları (1-5 yıldız)
-- [ ] Lazy loading optimization
-- [ ] WhatsApp numarasını gerçek numara ile güncelle (WhatsAppButton.js)
-
-## Next Tasks
-1. Admin paneli (Faz 2) — ayrı Emergent projesi olarak
-2. Ödeme entegrasyonu (iyzico önerilen)
-3. Tüm sayfalara react-helmet SEO title/description
+## Deployment (Coolify)
+- DEPLOYMENT.md dosyasında detaylı talimatlar
+- Production için iyzico_base_url: `api.iyzipay.com`
+- FRONTEND_URL ve CORS_ORIGINS production URL ile güncellenmeli
