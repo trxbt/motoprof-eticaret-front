@@ -237,19 +237,124 @@ const Navbar = () => {
             </div>
           </div>
 
-          {/* Search Bar */}
-          {searchOpen && (
-            <div className="pb-3 animate-fade-in">
-              <form onSubmit={(e) => { e.preventDefault(); handleSearchKeyDown({ key: 'Enter', preventDefault: () => {} }); }} className="relative">
-                <Search size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500" />
-                <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Ürün, marka veya model ara..." autoFocus data-testid="navbar-search-input"
-                  className="w-full bg-[#111111] border border-white/8 hover:border-white/15 focus:border-orange-500 text-white placeholder-neutral-600 rounded-xl py-3 pl-11 pr-4 text-sm transition-all outline-none focus:ring-1 focus:ring-orange-500/30" />
-              </form>
-            </div>
-          )}
+          {/* ── ARAMA OVERLAY ── (nav içindeki eski kısım kaldırıldı) */}
         </div>
       </nav>
+
+      {/* ═══════════════════════════════════════
+          ARAMA OVERLAY — nav dışında, fixed
+          ═══════════════════════════════════════ */}
+      {searchOpen && (
+        <>
+          {/* Backdrop */}
+          <div className="fixed inset-0 z-[45] bg-black/60 backdrop-blur-sm" onClick={() => setSearchOpen(false)} />
+
+          {/* Panel */}
+          <div className="fixed top-12 sm:top-16 left-0 right-0 z-[46] px-4 sm:px-6 lg:px-8 pt-3 pb-4"
+            style={{ maxHeight: 'calc(100vh - 64px)', overflowY: 'auto' }}>
+            <div className="max-w-2xl mx-auto">
+
+              {/* Input */}
+              <form onSubmit={(e) => { e.preventDefault(); handleSearchKeyDown({ key: 'Enter', preventDefault: () => {} }); }}
+                className="relative mb-3">
+                {searching
+                  ? <Loader2 size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-orange-400 animate-spin pointer-events-none" />
+                  : <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500 pointer-events-none" />
+                }
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={handleSearchKeyDown}
+                  placeholder="Ürün adı, marka veya parça türü yazın..."
+                  data-testid="navbar-search-input"
+                  className="w-full bg-[#111] border border-orange-500/40 focus:border-orange-500 text-white placeholder-neutral-600 rounded-2xl py-4 pl-12 pr-12 text-sm transition-all outline-none focus:ring-2 focus:ring-orange-500/20 shadow-2xl"
+                />
+                <button type="button" onClick={() => setSearchOpen(false)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-white transition-colors">
+                  <X size={16} />
+                </button>
+              </form>
+
+              {/* Sonuçlar */}
+              {searchQuery.trim().length >= 2 && (
+                <div className="bg-[#0d0d0d] border border-[#222] rounded-2xl overflow-hidden shadow-2xl"
+                  style={{ boxShadow: '0 20px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(249,115,22,0.1)' }}>
+
+                  {/* Header */}
+                  <div className="flex items-center justify-between px-4 py-2.5 border-b border-[#1a1a1a]">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-neutral-600">
+                      {searching ? 'Aranıyor...' : searchResults.length > 0 ? `${searchTotal} sonuç bulundu` : 'Sonuç bulunamadı'}
+                    </span>
+                    {searchTotal > 7 && (
+                      <button onClick={() => { navigate(`/urunler?search=${encodeURIComponent(searchQuery)}`); setSearchOpen(false); }}
+                        className="text-[10px] font-bold text-orange-400 hover:text-orange-300 flex items-center gap-1 transition-colors">
+                        Tümünü gör <ArrowRight size={10} />
+                      </button>
+                    )}
+                  </div>
+
+                  {searching && searchResults.length === 0 ? (
+                    <div className="py-8 flex items-center justify-center gap-2 text-neutral-600 text-sm">
+                      <Loader2 size={16} className="animate-spin" /> Aranıyor...
+                    </div>
+                  ) : searchResults.length === 0 ? (
+                    <div className="py-10 flex flex-col items-center justify-center text-center px-4">
+                      <Package size={30} className="text-neutral-700 mb-3" />
+                      <p className="text-sm text-neutral-500 font-semibold">"{searchQuery}" için sonuç bulunamadı</p>
+                      <p className="text-xs text-neutral-700 mt-1">Farklı bir kelime deneyin</p>
+                    </div>
+                  ) : (
+                    <>
+                      {searchResults.map((product, idx) => (
+                        <button key={product.id}
+                          onClick={() => { navigate(`/urun/${product.slug}`); setSearchOpen(false); }}
+                          data-testid={`search-result-${idx}`}
+                          className={`w-full flex items-center gap-3 px-4 py-3.5 hover:bg-orange-500/6 border-b border-[#161616] last:border-0 transition-colors text-left group ${activeIdx === idx ? 'bg-orange-500/8' : ''}`}
+                        >
+                          <div className="w-12 h-10 rounded-xl overflow-hidden flex-shrink-0 bg-[#111] border border-[#1e1e1e]">
+                            {product.image
+                              ? <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+                              : <div className="w-full h-full flex items-center justify-center"><Package size={13} className="text-neutral-700" /></div>
+                            }
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-white truncate group-hover:text-orange-300 transition-colors">
+                              {product.name}
+                            </p>
+                            <div className="flex items-center gap-1.5 mt-0.5">
+                              <span className="text-[10px] font-bold text-orange-500/70 uppercase">{product.brand}</span>
+                              <span className="text-neutral-700 text-[10px]">·</span>
+                              <span className="text-[10px] text-neutral-600 truncate">{product.category}</span>
+                            </div>
+                          </div>
+                          <div className="flex-shrink-0 text-right">
+                            <p className="text-sm font-black text-orange-400 font-chivo whitespace-nowrap">
+                              {product.price.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺
+                            </p>
+                            <p className={`text-[9px] font-bold mt-0.5 ${product.stock > 0 ? 'text-green-500' : 'text-red-500'}`}>
+                              {product.stock > 0 ? 'Stokta' : 'Tükendi'}
+                            </p>
+                          </div>
+                        </button>
+                      ))}
+                      <button
+                        onClick={() => { navigate(`/urunler?search=${encodeURIComponent(searchQuery)}`); setSearchOpen(false); }}
+                        className="w-full flex items-center justify-center gap-2 py-3.5 text-xs font-bold text-orange-400 hover:text-white hover:bg-orange-500/8 transition-all border-t border-[#1a1a1a]"
+                      >
+                        <Search size={12} />
+                        "{searchQuery}" için tüm {searchTotal} sonucu gör
+                        <ArrowRight size={12} />
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </>
+      )}
 
       {/* ═══════════════════════════════════════
           MOBİL MENÜ — Full-screen bottom drawer

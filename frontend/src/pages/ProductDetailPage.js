@@ -2,23 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import {
   ChevronRight, ShoppingCart, CheckCircle, Package,
-  ChevronLeft, ChevronRight as ChevronRightIcon,
-  Truck, RotateCcw, Shield, Wrench, Lock
+  ChevronLeft, ChevronRight as ChevronRightIcon, Lock
 } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
-import { getBrandBySlug, BRANDS } from '../constants/categories';
+import { getBrandBySlug } from '../constants/categories';
 import ProductCard from '../components/ProductCard';
 import { toast } from 'sonner';
 import axios from 'axios';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
-
-const SHIPPING_INFO = [
-  { icon: Truck, title: 'Hızlı Kargo', desc: 'Aynı gün kargo' },
-  { icon: RotateCcw, title: '30 Gün İade', desc: 'Koşulsuz iade' },
-  { icon: Shield, title: 'Orijinal Kalite', desc: 'Garantili ürün' },
-  { icon: Wrench, title: 'Teknik Destek', desc: 'Montaj desteği' },
-];
 
 const ProductDetailPage = () => {
   const { slug } = useParams();
@@ -133,7 +125,7 @@ const ProductDetailPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-14 mb-12">
 
           {/* LEFT: Image */}
-          <div className="space-y-3">
+          <div>
             <div className="relative bg-[#111111] border border-[#1e1e1e] rounded-2xl sm:rounded-3xl overflow-hidden aspect-[4/3]">
               <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
               <div className="absolute inset-0 bg-gradient-to-t from-[#111111]/50 via-transparent to-transparent" />
@@ -147,19 +139,6 @@ const ProductDetailPage = () => {
                   Son {product.stock}!
                 </div>
               )}
-            </div>
-
-            {/* Shipping info — 2x2 on mobile, 2x2 on all */}
-            <div className="grid grid-cols-2 gap-2">
-              {SHIPPING_INFO.map(({ icon: Icon, title, desc }) => (
-                <div key={title} className="flex items-start gap-2.5 p-3 bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl">
-                  <Icon size={13} className="text-orange-500 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="text-xs font-bold text-white leading-tight">{title}</p>
-                    <p className="text-[10px] text-neutral-600 mt-0.5 leading-tight">{desc}</p>
-                  </div>
-                </div>
-              ))}
             </div>
           </div>
 
