@@ -39,8 +39,6 @@ const CheckoutPage = () => {
   });
 
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [orderId, setOrderId] = useState(null);
   const [error, setError] = useState('');
   const [couponCode, setCouponCode] = useState('');
   const [coupon, setCoupon] = useState(null);
@@ -97,8 +95,11 @@ const CheckoutPage = () => {
     try {
       const orderData = {
         items: items.map(item => ({
-          product_id: item.id, name: item.name,
-          price: item.price, quantity: item.quantity, image: item.image,
+          product_id: item.id,
+          product_name: item.name,
+          product_image: item.image,
+          price: item.price,
+          quantity: item.quantity,
         })),
         total: finalTotal,
         shipping_name: form.shipping_name,
@@ -110,40 +111,21 @@ const CheckoutPage = () => {
         coupon_code: coupon?.code || null,
         discount: coupon?.discount || null,
       };
-      const { data } = await axios.post(`${API}/orders`, orderData, { withCredentials: true });
-      setOrderId(data.id);
-      clearCart();
-      setSuccess(true);
+      const { data } = await axios.post(`${API}/payments/iyzico/initialize`, orderData, { withCredentials: true });
+      if (data.paymentPageUrl) {
+        window.location.href = data.paymentPageUrl;
+      } else {
+        setError('Ödeme sayfası alınamadı. Lütfen tekrar deneyin.');
+        setLoading(false);
+      }
     } catch (err) {
-      setError(err.response?.data?.detail || 'Sipariş oluşturulurken bir hata oluştu.');
-    } finally {
+      setError(err.response?.data?.detail || 'Ödeme başlatılırken bir hata oluştu.');
       setLoading(false);
     }
   };
 
-  if (success) {
-    return (
-      <div className="pt-20 min-h-[70vh] flex flex-col items-center justify-center px-4 text-center">
-        <div className="p-5 bg-green-500/10 rounded-full mb-5 border border-green-500/20">
-          <CheckCircle size={48} className="text-green-500" />
-        </div>
-        <h1 className="text-2xl font-black text-white font-chivo mb-3">Siparişiniz Alındı!</h1>
-        <p className="text-neutral-400 text-sm mb-2">
-          Sipariş numaranız: <span className="text-orange-400 font-mono font-semibold text-xs">{orderId}</span>
-        </p>
-        <p className="text-neutral-400 text-sm mb-6 max-w-md">
-          Siparişiniz başarıyla oluşturuldu. Sipariş durumunuzu profilinizden takip edebilirsiniz.
-        </p>
-        <div className="flex gap-3 flex-wrap justify-center">
-          <Link to="/profil" className="bg-orange-500 hover:bg-orange-600 text-white font-bold px-6 py-2.5 rounded-lg transition-colors text-sm">
-            Siparişimi Görüntüle
-          </Link>
-          <Link to="/urunler" className="bg-[#171717] hover:bg-[#262626] border border-[#3f3f46] text-white font-bold px-6 py-2.5 rounded-lg transition-colors text-sm">
-            Alışverişe Devam Et
-          </Link>
-        </div>
-      </div>
-    );
+  if (false) { // Success state moved to PaymentResultPage
+    return null;
   }
 
   return (
@@ -346,20 +328,29 @@ const CheckoutPage = () => {
               )}
             </div>
 
-            {/* Mock Payment */}
+            {/* iyzico Payment */}
             <div className={sectionCls}>
               <h2 className="text-sm font-bold text-white uppercase tracking-wider mb-4 flex items-center gap-2">
                 <CreditCard size={16} className="text-orange-500" />
-                Ödeme Bilgileri
+                Ödeme Yöntemi
               </h2>
-              <div className="bg-amber-500/5 border border-amber-500/20 rounded-xl p-4">
-                <div className="flex items-center gap-2 mb-1.5">
-                  <Lock size={13} className="text-amber-400" />
-                  <span className="text-amber-400 text-xs font-black uppercase tracking-wider">Test Ortamı</span>
+              <div className="bg-[#0d0d0d] border border-[#2a2a2a] rounded-xl p-4 flex items-center gap-4">
+                <div className="flex items-center justify-center w-12 h-12 bg-[#1a1a1a] rounded-xl border border-[#333] flex-shrink-0">
+                  <Lock size={20} className="text-orange-500" />
                 </div>
-                <p className="text-neutral-500 text-xs leading-relaxed">
-                  Bu bir demo ortamıdır. Gerçek ödeme alınmamaktadır. Ödeme entegrasyonu 2. fazda eklenecektir.
-                </p>
+                <div className="flex-1">
+                  <p className="text-white text-sm font-bold">iyzico Güvenli Ödeme</p>
+                  <p className="text-neutral-500 text-xs mt-0.5">Visa, MasterCard, Troy — 3D Secure korumalı</p>
+                </div>
+                <div className="flex gap-1 flex-shrink-0">
+                  {['VISA','MC','TR'].map(b => (
+                    <span key={b} className="text-[9px] font-black text-neutral-500 border border-[#333] rounded px-1 py-0.5">{b}</span>
+                  ))}
+                </div>
+              </div>
+              <div className="mt-3 flex items-center gap-2 text-xs text-neutral-600">
+                <Lock size={10} className="text-green-500" />
+                <span>SSL şifreli • 256-bit güvenlik • iyzico altyapısı</span>
               </div>
             </div>
 
@@ -376,9 +367,9 @@ const CheckoutPage = () => {
               className="w-full flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 disabled:bg-neutral-700 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl transition-all active:scale-95 text-sm uppercase tracking-wider"
             >
               {loading ? (
-                <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />İşleniyor...</>
+                <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />iyzico'ya Yönlendiriliyor...</>
               ) : (
-                <><Lock size={16} />Siparişi Onayla</>
+                <><Lock size={16} />iyzico ile Güvenli Öde</>
               )}
             </button>
           </form>

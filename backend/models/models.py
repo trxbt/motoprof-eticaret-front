@@ -56,6 +56,7 @@ class Order(Base):
     invoice:          Mapped[Optional[dict]]   = mapped_column(JSONB)
     coupon_code:      Mapped[Optional[str]]    = mapped_column(String(100))
     discount:         Mapped[Optional[float]]  = mapped_column(Numeric(10, 2))
+    iyzico_token:     Mapped[Optional[str]]    = mapped_column(String(500))
     created_at:       Mapped[datetime]         = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     user:  Mapped[Optional["User"]]  = relationship(back_populates="orders")
     items: Mapped[List["OrderItem"]] = relationship(back_populates="order", cascade="all, delete-orphan")

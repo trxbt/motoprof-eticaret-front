@@ -19,6 +19,7 @@ import CheckoutPage from './pages/CheckoutPage';
 import AuthPage from './pages/AuthPage';
 import ProfilePage from './pages/ProfilePage';
 import WishlistPage from './pages/WishlistPage';
+import PaymentResultPage from './pages/PaymentResultPage';
 import './App.css';
 
 function App() {
@@ -40,6 +41,7 @@ function App() {
                 <Route path="/urun/:slug" element={<ProductDetailPage />} />
                 <Route path="/sepet" element={<CartPage />} />
                 <Route path="/odeme" element={<CheckoutPage />} />
+                <Route path="/odeme-sonuc" element={<PaymentResultPage />} />
                 <Route path="/giris" element={<AuthPage />} />
                 <Route path="/favoriler" element={<WishlistPage />} />
                 <Route path="/profil" element={

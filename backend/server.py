@@ -2,6 +2,7 @@ import os
 import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import text
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -10,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 from database import engine, Base
 from seed import seed_admin, seed_products, seed_coupons
-from routes import auth_router, products_router, orders_router, wishlist_router, coupons_router, misc_router
+from routes import auth_router, products_router, orders_router, wishlist_router, coupons_router, misc_router, payments_router
 
 app = FastAPI(title="MotoProf API", version="2.0.0")
 
@@ -28,12 +29,15 @@ app.include_router(orders_router,   prefix="/api")
 app.include_router(wishlist_router, prefix="/api")
 app.include_router(coupons_router,  prefix="/api")
 app.include_router(misc_router,     prefix="/api")
+app.include_router(payments_router, prefix="/api")
 
 
 @app.on_event("startup")
 async def startup():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        # Safe migrations — add new columns if they don't exist yet
+        await conn.execute(text("ALTER TABLE orders ADD COLUMN IF NOT EXISTS iyzico_token VARCHAR(500)"))
     await seed_admin()
     await seed_products()
     await seed_coupons()
