@@ -102,6 +102,16 @@ class OrderItemIn(BaseModel):
     quantity: int
     image: str
 
+class InvoiceInfo(BaseModel):
+    type: str  # 'bireysel' | 'kurumsal'
+    name: Optional[str] = None           # Bireysel: Ad Soyad
+    tc_no: Optional[str] = None          # Bireysel: TC Kimlik No
+    company: Optional[str] = None        # Kurumsal: Firma Adı
+    tax_office: Optional[str] = None     # Kurumsal: Vergi Dairesi
+    tax_no: Optional[str] = None         # Kurumsal: Vergi No
+    address: Optional[str] = None        # Fatura Adresi
+    email: Optional[str] = None          # Fatura E-postası
+
 class OrderCreate(BaseModel):
     items: List[OrderItemIn]
     total: float
@@ -110,6 +120,7 @@ class OrderCreate(BaseModel):
     shipping_address: str
     shipping_city: str
     guest_email: Optional[str] = None
+    invoice: Optional[InvoiceInfo] = None
 
 # ─── Auth endpoints ────────────────────────────────────────────────────────────
 @api_router.post("/auth/register")
@@ -243,6 +254,7 @@ async def create_order(data: OrderCreate, request: Request):
         "shipping_city": data.shipping_city,
         "status": "pending",
         "payment_status": "mock_paid",
+        "invoice": data.invoice.model_dump() if data.invoice else None,
         "created_at": datetime.now(timezone.utc),
     }
     result = await db.orders.insert_one(order)

@@ -1,0 +1,29 @@
+{
+  "summary": "Tested invoice (fatura) feature on CheckoutPage. All 6 test scenarios passed: toggle closed by default, opens invoice form, bireysel fields visible, kurumsal fields visible on switch, validation errors for empty bireysel fields, validation errors for empty kurumsal fields.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_results": {
+    "checkout_page_loads": "PASS - /odeme accessible without login, invoice-toggle visible",
+    "invoice_toggle_default_off": "PASS - invoice form fields hidden by default",
+    "invoice_toggle_opens_form": "PASS - clicking invoice-toggle shows invoice fields",
+    "bireysel_fields_visible": "PASS - invoice-name and invoice-tc visible when bireysel selected",
+    "kurumsal_fields_visible": "PASS - invoice-company, invoice-tax-office, invoice-tax-no visible on kurumsal",
+    "bireysel_validation": "PASS - Error: 'Bireysel fatura için ad soyad ve TC kimlik no zorunludur.'",
+    "kurumsal_validation": "PASS - Error: 'Kurumsal fatura için firma adı, vergi dairesi ve vergi no zorunludur.'"
+  },
+  "test_report_links": ["/app/test_reports/iteration_3.json"],
+  "action_items": [],
+  "critical_code_review_comments": [],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A", "frontend": "100%"},
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Invoice feature fully working. All data-testid attributes present: invoice-toggle, invoice-type-bireysel, invoice-type-kurumsal, invoice-name, invoice-tc, invoice-company, invoice-tax-office, invoice-tax-no. Backend InvoiceInfo model and OrderCreate.invoice field are in place."
+}

@@ -1,13 +1,26 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   ShoppingCart, User, Menu, ChevronDown, X, Search,
-  ChevronRight, LogIn, UserPlus, Package, Home, Grid3x3
+  ChevronRight, LogIn, UserPlus, Package, Home, Grid3x3,
+  Loader2, ArrowRight, TrendingUp
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import { BRANDS } from '../constants/categories';
 import { NAVBAR } from '../constants/testIds';
+import axios from 'axios';
+
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+
+function useDebounce(value, delay) {
+  const [deb, setDeb] = useState(value);
+  useEffect(() => {
+    const t = setTimeout(() => setDeb(value), delay);
+    return () => clearTimeout(t);
+  }, [value, delay]);
+  return deb;
+}
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -16,10 +29,16 @@ const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchTotal, setSearchTotal] = useState(0);
+  const [searching, setSearching] = useState(false);
+  const [activeIdx, setActiveIdx] = useState(-1);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [scrolled, setScrolled] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [expandedBrand, setExpandedBrand] = useState(null);
+  const searchInputRef = useRef(null);
+  const debouncedQuery = useDebounce(searchQuery, 260);
 
   useEffect(() => {
     const onScroll = () => {
@@ -32,18 +51,59 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  useEffect(() => {
+    if (debouncedQuery.trim().length < 2) {
+      setSearchResults([]);
+      setSearchTotal(0);
+      setActiveIdx(-1);
+      return;
+    }
+    const ctrl = new AbortController();
+    setSearching(true);
+    axios.get(`${API}/products?search=${encodeURIComponent(debouncedQuery)}&limit=7`, { signal: ctrl.signal })
+      .then(({ data }) => {
+        setSearchResults(data.products || []);
+        setSearchTotal(data.total || 0);
+        setActiveIdx(-1);
+      })
+      .catch(() => {})
+      .finally(() => setSearching(false));
+    return () => ctrl.abort();
+  }, [debouncedQuery]);
+
+  // Arama açıkken input'a odaklan
+  useEffect(() => {
+    if (searchOpen) {
+      setTimeout(() => searchInputRef.current?.focus(), 80);
+      document.body.style.overflow = 'hidden';
+    } else {
+      setSearchQuery('');
+      setSearchResults([]);
+      document.body.style.overflow = '';
+    }
+  }, [searchOpen]);
+
   // Menü açıkken body scroll kilitle
   useEffect(() => {
-    document.body.style.overflow = mobileOpen ? 'hidden' : '';
-    return () => { document.body.style.overflow = ''; };
-  }, [mobileOpen]);
+    if (!searchOpen) {
+      document.body.style.overflow = mobileOpen ? 'hidden' : '';
+    }
+    return () => { if (!searchOpen) document.body.style.overflow = ''; };
+  }, [mobileOpen, searchOpen]);
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/urunler?search=${encodeURIComponent(searchQuery.trim())}`);
-      setSearchOpen(false);
-      setSearchQuery('');
+  const handleSearchKeyDown = (e) => {
+    if (e.key === 'Escape') { setSearchOpen(false); return; }
+    if (e.key === 'ArrowDown') { e.preventDefault(); setActiveIdx(i => Math.min(i + 1, searchResults.length - 1)); return; }
+    if (e.key === 'ArrowUp') { e.preventDefault(); setActiveIdx(i => Math.max(i - 1, -1)); return; }
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (activeIdx >= 0 && searchResults[activeIdx]) {
+        navigate(`/urun/${searchResults[activeIdx].slug}`);
+        setSearchOpen(false);
+      } else if (searchQuery.trim().length >= 2) {
+        navigate(`/urunler?search=${encodeURIComponent(searchQuery.trim())}`);
+        setSearchOpen(false);
+      }
     }
   };
 
@@ -122,7 +182,7 @@ const Navbar = () => {
 
             {/* Right Actions */}
             <div className="flex items-center gap-1">
-              <button onClick={() => setSearchOpen(!searchOpen)} data-testid="navbar-search-btn"
+              <button onClick={() => setSearchOpen(true)} data-testid="navbar-search-btn"
                 className="w-9 h-9 flex items-center justify-center text-neutral-500 hover:text-white hover:bg-white/5 rounded-lg transition-all">
                 <Search size={17} />
               </button>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { CheckCircle, CreditCard, Lock, Package, User, ArrowRight } from 'lucide-react';
+import { CheckCircle, CreditCard, Lock, Package, User, ArrowRight, FileText, Building2, UserCheck, ChevronDown } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 import { CHECKOUT } from '../constants/testIds';
@@ -8,6 +8,10 @@ import { toast } from 'sonner';
 import axios from 'axios';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+
+const inputCls = "w-full bg-[#0a0a0a] border border-[#2a2a2a] text-white placeholder-neutral-700 rounded-xl py-2.5 px-3.5 text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500/30 transition-colors";
+const labelCls = "text-xs text-neutral-500 font-semibold block mb-1.5";
+const sectionCls = "bg-[#111] border border-[#1e1e1e] rounded-2xl p-5 mb-4";
 
 const CheckoutPage = () => {
   const { items, total, clearCart } = useCart();
@@ -21,6 +25,19 @@ const CheckoutPage = () => {
     shipping_city: '',
     guest_email: '',
   });
+
+  const [wantsInvoice, setWantsInvoice] = useState(false);
+  const [invoiceType, setInvoiceType] = useState('bireysel');
+  const [invoice, setInvoice] = useState({
+    name: user?.name || '',
+    tc_no: '',
+    email: user?.email || '',
+    address: '',
+    company: '',
+    tax_office: '',
+    tax_no: '',
+  });
+
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [orderId, setOrderId] = useState(null);
@@ -29,6 +46,10 @@ const CheckoutPage = () => {
   const handleChange = (e) => {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
     setError('');
+  };
+
+  const handleInvoiceChange = (e) => {
+    setInvoice(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const handleSubmit = async (e) => {
@@ -41,20 +62,24 @@ const CheckoutPage = () => {
       setError('Lütfen e-posta adresinizi girin.');
       return;
     }
-    if (items.length === 0) {
-      toast.error('Sepetiniz boş!');
-      navigate('/sepet');
-      return;
+    if (wantsInvoice) {
+      if (invoiceType === 'bireysel' && (!invoice.name || !invoice.tc_no)) {
+        setError('Bireysel fatura için ad soyad ve TC kimlik no zorunludur.');
+        return;
+      }
+      if (invoiceType === 'kurumsal' && (!invoice.company || !invoice.tax_office || !invoice.tax_no)) {
+        setError('Kurumsal fatura için firma adı, vergi dairesi ve vergi no zorunludur.');
+        return;
+      }
     }
+    if (items.length === 0) { toast.error('Sepetiniz boş!'); navigate('/sepet'); return; }
+
     setLoading(true);
     try {
       const orderData = {
         items: items.map(item => ({
-          product_id: item.id,
-          name: item.name,
-          price: item.price,
-          quantity: item.quantity,
-          image: item.image,
+          product_id: item.id, name: item.name,
+          price: item.price, quantity: item.quantity, image: item.image,
         })),
         total,
         shipping_name: form.shipping_name,
@@ -62,6 +87,7 @@ const CheckoutPage = () => {
         shipping_address: form.shipping_address,
         shipping_city: form.shipping_city,
         guest_email: user ? undefined : form.guest_email,
+        invoice: wantsInvoice ? { type: invoiceType, ...invoice } : null,
       };
       const { data } = await axios.post(`${API}/orders`, orderData, { withCredentials: true });
       setOrderId(data.id);
@@ -123,96 +149,195 @@ const CheckoutPage = () => {
 
             {/* Guest email - only if not logged in */}
             {!user && (
-              <div className="bg-[#171717] border border-[#3f3f46] rounded-xl p-5 mb-4">
+              <div className={sectionCls}>
                 <h2 className="text-sm font-bold text-white uppercase tracking-wider mb-4 flex items-center gap-2">
                   <User size={16} className="text-orange-500" />
                   İletişim Bilgisi
                 </h2>
                 <div>
-                  <label className="text-xs text-neutral-400 font-semibold block mb-1.5">E-posta Adresiniz *</label>
-                  <input
-                    type="email"
-                    name="guest_email"
-                    value={form.guest_email}
-                    onChange={handleChange}
-                    placeholder="siparis@ornek.com"
-                    data-testid="checkout-guest-email"
-                    className="w-full bg-[#0a0a0a] border border-[#3f3f46] text-white placeholder-neutral-600 rounded-lg py-2.5 px-3 text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors"
-                  />
-                  <p className="text-xs text-neutral-600 mt-1.5">Sipariş bilgisi bu adrese gönderilecektir.</p>
+                  <label className={labelCls}>E-posta Adresiniz *</label>
+                  <input type="email" name="guest_email" value={form.guest_email} onChange={handleChange}
+                    placeholder="siparis@ornek.com" data-testid="checkout-guest-email" className={inputCls} />
+                  <p className="text-xs text-neutral-700 mt-1.5">Sipariş bilgisi bu adrese gönderilecektir.</p>
                 </div>
               </div>
             )}
-            <div className="bg-[#171717] border border-[#3f3f46] rounded-xl p-5 mb-4">
+            <div className={sectionCls}>
               <h2 className="text-sm font-bold text-white uppercase tracking-wider mb-4 flex items-center gap-2">
                 <Package size={16} className="text-orange-500" />
                 Teslimat Bilgileri
               </h2>
               <div className="space-y-3">
                 <div>
-                  <label className="text-xs text-neutral-400 font-semibold block mb-1.5">Ad Soyad *</label>
-                  <input
-                    type="text"
-                    name="shipping_name"
-                    value={form.shipping_name}
-                    onChange={handleChange}
-                    placeholder="Adınız ve soyadınız"
-                    data-testid={CHECKOUT.nameInput}
-                    className="w-full bg-[#0a0a0a] border border-[#3f3f46] text-white placeholder-neutral-600 rounded-lg py-2.5 px-3 text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors"
-                  />
+                  <label className={labelCls}>Ad Soyad *</label>
+                  <input type="text" name="shipping_name" value={form.shipping_name} onChange={handleChange}
+                    placeholder="Adınız ve soyadınız" data-testid={CHECKOUT.nameInput} className={inputCls} />
                 </div>
                 <div>
-                  <label className="text-xs text-neutral-400 font-semibold block mb-1.5">Telefon *</label>
-                  <input
-                    type="tel"
-                    name="shipping_phone"
-                    value={form.shipping_phone}
-                    onChange={handleChange}
-                    placeholder="0(5XX) XXX XX XX"
-                    data-testid={CHECKOUT.phoneInput}
-                    className="w-full bg-[#0a0a0a] border border-[#3f3f46] text-white placeholder-neutral-600 rounded-lg py-2.5 px-3 text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors"
-                  />
+                  <label className={labelCls}>Telefon *</label>
+                  <input type="tel" name="shipping_phone" value={form.shipping_phone} onChange={handleChange}
+                    placeholder="0(5XX) XXX XX XX" data-testid={CHECKOUT.phoneInput} className={inputCls} />
                 </div>
                 <div>
-                  <label className="text-xs text-neutral-400 font-semibold block mb-1.5">Adres *</label>
-                  <textarea
-                    name="shipping_address"
-                    value={form.shipping_address}
-                    onChange={handleChange}
-                    placeholder="Mahalle, sokak, bina no, daire no"
-                    rows={3}
-                    data-testid={CHECKOUT.addressInput}
-                    className="w-full bg-[#0a0a0a] border border-[#3f3f46] text-white placeholder-neutral-600 rounded-lg py-2.5 px-3 text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors resize-none"
-                  />
+                  <label className={labelCls}>Adres *</label>
+                  <textarea name="shipping_address" value={form.shipping_address} onChange={handleChange}
+                    placeholder="Mahalle, sokak, bina no, daire no" rows={3}
+                    data-testid={CHECKOUT.addressInput} className={`${inputCls} resize-none`} />
                 </div>
                 <div>
-                  <label className="text-xs text-neutral-400 font-semibold block mb-1.5">Şehir *</label>
-                  <input
-                    type="text"
-                    name="shipping_city"
-                    value={form.shipping_city}
-                    onChange={handleChange}
-                    placeholder="İstanbul"
-                    data-testid={CHECKOUT.cityInput}
-                    className="w-full bg-[#0a0a0a] border border-[#3f3f46] text-white placeholder-neutral-600 rounded-lg py-2.5 px-3 text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors"
-                  />
+                  <label className={labelCls}>Şehir *</label>
+                  <input type="text" name="shipping_city" value={form.shipping_city} onChange={handleChange}
+                    placeholder="İstanbul" data-testid={CHECKOUT.cityInput} className={inputCls} />
                 </div>
               </div>
             </div>
 
+            {/* ── FATURA BİLGİLERİ ── */}
+            <div className={`${sectionCls} overflow-hidden`}>
+              {/* Toggle header */}
+              <button
+                type="button"
+                data-testid="invoice-toggle"
+                onClick={() => setWantsInvoice(v => !v)}
+                className="w-full flex items-center justify-between group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${wantsInvoice ? 'bg-orange-500/20 border border-orange-500/30' : 'bg-[#1a1a1a] border border-[#2a2a2a]'}`}>
+                    <FileText size={15} className={wantsInvoice ? 'text-orange-400' : 'text-neutral-600'} />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-sm font-bold text-white">Fatura İstiyorum</p>
+                    <p className="text-xs text-neutral-600 mt-0.5">Bireysel veya kurumsal fatura</p>
+                  </div>
+                </div>
+                {/* Toggle switch */}
+                <div className={`relative w-11 h-6 rounded-full transition-all duration-200 ${wantsInvoice ? 'bg-orange-500' : 'bg-[#2a2a2a]'}`}>
+                  <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all duration-200 ${wantsInvoice ? 'left-[22px]' : 'left-0.5'}`} />
+                </div>
+              </button>
+
+              {/* Invoice form */}
+              {wantsInvoice && (
+                <div className="mt-5 pt-5 border-t border-[#1e1e1e]">
+
+                  {/* Type selector */}
+                  <div className="grid grid-cols-2 gap-2 mb-5">
+                    <button
+                      type="button"
+                      data-testid="invoice-type-bireysel"
+                      onClick={() => setInvoiceType('bireysel')}
+                      className={`flex items-center gap-2.5 p-3 rounded-xl border transition-all ${invoiceType === 'bireysel'
+                        ? 'border-orange-500/50 bg-orange-500/8 text-white'
+                        : 'border-[#2a2a2a] bg-[#0d0d0d] text-neutral-500 hover:border-[#333]'}`}
+                    >
+                      <UserCheck size={15} className={invoiceType === 'bireysel' ? 'text-orange-400' : ''} />
+                      <div className="text-left">
+                        <p className="text-xs font-bold leading-tight">Bireysel</p>
+                        <p className="text-[10px] text-neutral-600 mt-0.5">TC Kimlikli</p>
+                      </div>
+                    </button>
+                    <button
+                      type="button"
+                      data-testid="invoice-type-kurumsal"
+                      onClick={() => setInvoiceType('kurumsal')}
+                      className={`flex items-center gap-2.5 p-3 rounded-xl border transition-all ${invoiceType === 'kurumsal'
+                        ? 'border-orange-500/50 bg-orange-500/8 text-white'
+                        : 'border-[#2a2a2a] bg-[#0d0d0d] text-neutral-500 hover:border-[#333]'}`}
+                    >
+                      <Building2 size={15} className={invoiceType === 'kurumsal' ? 'text-orange-400' : ''} />
+                      <div className="text-left">
+                        <p className="text-xs font-bold leading-tight">Kurumsal</p>
+                        <p className="text-[10px] text-neutral-600 mt-0.5">Vergi Numaralı</p>
+                      </div>
+                    </button>
+                  </div>
+
+                  {/* BİREYSEL alanlar */}
+                  {invoiceType === 'bireysel' && (
+                    <div className="space-y-3">
+                      <div>
+                        <label className={labelCls}>Ad Soyad *</label>
+                        <input type="text" name="name" value={invoice.name} onChange={handleInvoiceChange}
+                          placeholder="Fatura sahibinin adı" data-testid="invoice-name"
+                          className={inputCls} />
+                      </div>
+                      <div>
+                        <label className={labelCls}>TC Kimlik No *</label>
+                        <input type="text" name="tc_no" value={invoice.tc_no} onChange={handleInvoiceChange}
+                          placeholder="11 haneli TC Kimlik No" maxLength={11} data-testid="invoice-tc"
+                          className={inputCls} />
+                      </div>
+                      <div>
+                        <label className={labelCls}>Fatura E-postası</label>
+                        <input type="email" name="email" value={invoice.email} onChange={handleInvoiceChange}
+                          placeholder="fatura@ornek.com" data-testid="invoice-email"
+                          className={inputCls} />
+                      </div>
+                      <div>
+                        <label className={labelCls}>Fatura Adresi</label>
+                        <textarea name="address" value={invoice.address} onChange={handleInvoiceChange}
+                          placeholder="Fatura adresi (boş bırakırsanız teslimat adresi kullanılır)"
+                          rows={2} data-testid="invoice-address"
+                          className={`${inputCls} resize-none`} />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* KURUMSAL alanlar */}
+                  {invoiceType === 'kurumsal' && (
+                    <div className="space-y-3">
+                      <div>
+                        <label className={labelCls}>Firma Adı *</label>
+                        <input type="text" name="company" value={invoice.company} onChange={handleInvoiceChange}
+                          placeholder="Firma Adı A.Ş." data-testid="invoice-company"
+                          className={inputCls} />
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className={labelCls}>Vergi Dairesi *</label>
+                          <input type="text" name="tax_office" value={invoice.tax_office} onChange={handleInvoiceChange}
+                            placeholder="Ör: Kadıköy VD" data-testid="invoice-tax-office"
+                            className={inputCls} />
+                        </div>
+                        <div>
+                          <label className={labelCls}>Vergi No *</label>
+                          <input type="text" name="tax_no" value={invoice.tax_no} onChange={handleInvoiceChange}
+                            placeholder="10 haneli vergi no" maxLength={10} data-testid="invoice-tax-no"
+                            className={inputCls} />
+                        </div>
+                      </div>
+                      <div>
+                        <label className={labelCls}>Fatura E-postası</label>
+                        <input type="email" name="email" value={invoice.email} onChange={handleInvoiceChange}
+                          placeholder="muhasebe@firma.com" data-testid="invoice-company-email"
+                          className={inputCls} />
+                      </div>
+                      <div>
+                        <label className={labelCls}>Fatura Adresi</label>
+                        <textarea name="address" value={invoice.address} onChange={handleInvoiceChange}
+                          placeholder="Şirket fatura adresi"
+                          rows={2} data-testid="invoice-company-address"
+                          className={`${inputCls} resize-none`} />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
             {/* Mock Payment */}
-            <div className="bg-[#171717] border border-[#3f3f46] rounded-xl p-5 mb-4">
+            <div className={sectionCls}>
               <h2 className="text-sm font-bold text-white uppercase tracking-wider mb-4 flex items-center gap-2">
                 <CreditCard size={16} className="text-orange-500" />
                 Ödeme Bilgileri
               </h2>
-              <div className="bg-yellow-500/5 border border-yellow-500/20 rounded-lg p-4">
+              <div className="bg-amber-500/5 border border-amber-500/20 rounded-xl p-4">
                 <div className="flex items-center gap-2 mb-1.5">
-                  <Lock size={14} className="text-yellow-400" />
-                  <span className="text-yellow-400 text-xs font-bold uppercase tracking-wider">Test Ortamı</span>
+                  <Lock size={13} className="text-amber-400" />
+                  <span className="text-amber-400 text-xs font-black uppercase tracking-wider">Test Ortamı</span>
                 </div>
-                <p className="text-neutral-400 text-xs leading-relaxed">
-                  Bu bir demo ortamıdır. Gerçek ödeme bilgisi alınmamaktadır. Gerçek ödeme entegrasyonu 2. fazda eklenecektir.
+                <p className="text-neutral-500 text-xs leading-relaxed">
+                  Bu bir demo ortamıdır. Gerçek ödeme alınmamaktadır. Ödeme entegrasyonu 2. fazda eklenecektir.
                 </p>
               </div>
             </div>
