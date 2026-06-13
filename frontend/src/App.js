@@ -7,6 +7,7 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import CustomCursor from './components/CustomCursor';
 import WhatsAppButton from './components/WhatsAppButton';
+import PWAInstallBanner from './components/PWAInstallBanner';
 import ProtectedRoute from './components/ProtectedRoute';
 import HomePage from './pages/HomePage';
 import CategoryPage from './pages/CategoryPage';
@@ -45,6 +46,7 @@ function App() {
             <Footer />
           </div>
           <WhatsAppButton />
+          <PWAInstallBanner />
           <Toaster richColors position="top-right" closeButton />
         </CartProvider>
       </AuthProvider>

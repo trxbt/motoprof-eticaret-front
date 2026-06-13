@@ -1,10 +1,10 @@
-const CACHE_NAME = 'motoprof-v1';
+const CACHE_NAME = 'motoprof-v2';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/icon-192.svg',
-  '/icon-512.svg',
+  '/icon-192.png',
+  '/icon-512.png',
 ];
 
 // Install: statik dosyaları önbelleğe al
