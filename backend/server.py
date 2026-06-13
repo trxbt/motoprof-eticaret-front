@@ -343,6 +343,9 @@ async def toggle_wishlist(data: WishlistToggle, request: Request):
 # ─── Stock Notification endpoints ─────────────────────────────────────────────
 @api_router.post("/stock-notify")
 async def stock_notify(data: StockNotifyRequest):
+    import re
+    if not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", data.email):
+        raise HTTPException(status_code=422, detail="Geçerli bir e-posta adresi girin")
     existing = await db.stock_notifications.find_one(
         {"product_id": data.product_id, "email": data.email.lower().strip()}
     )

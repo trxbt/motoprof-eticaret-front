@@ -5,7 +5,7 @@ Motosiklet yedek parça e-ticaret sitesi. Marka adı: MotoProf - Motorcycle Spar
 Renk: #f97316 (turuncu). Mobil öncelikli, SEO uyumlu, Türkçe.
 
 ## Architecture
-- **Frontend**: React 18 + React Router v7 + Tailwind CSS + Shadcn UI
+- **Frontend**: React 18 + React Router v7 + Tailwind CSS + Shadcn UI + react-helmet-async
 - **Backend**: FastAPI + MongoDB + PyJWT + bcrypt
 - **Hosting**: Kubernetes pod (frontend:3000, backend:8001)
 
@@ -15,66 +15,77 @@ Renk: #f97316 (turuncu). Mobil öncelikli, SEO uyumlu, Türkçe.
 - CF MOTO: NK250, 250SR
 - BAJAJ: NS200
 
-## What's Been Implemented (Faz 1 — Tamamlandı)
+## What's Been Implemented
 
 ### Backend (server.py)
 - [x] JWT auth: register, login, logout, me, refresh
-- [x] Products: list (filtered), detail by slug
-- [x] Orders: create, list by user, detail
-- [x] Auto-seed: admin user + 25 demo products on startup
-- [x] MongoDB indexes
+- [x] Products: list (filtered + multi-word search by name/brand/model/sku/oem_kodu), detail by slug
+- [x] Orders: create (guest + invoice + coupon support), list by user, detail
+- [x] Coupons: validate endpoint (MOTO10 %10, ILKALIS %15, KARGO50 50₺ sabit, WELCOME %10)
+- [x] Wishlist: GET + toggle (per-user MongoDB)
+- [x] Stock notifications: subscribe endpoint (e-mail validation)
+- [x] Sitemap: GET /api/sitemap.xml (dynamic, tüm ürün slug'ları)
+- [x] Auto-seed: admin + 25 demo products + 4 coupons + images migration on startup
 
-### Frontend
-- [x] Anasayfa — Hero Slider (Embla) + Stats bar + Search Engine + Trust Features + Brand Cards + Featured Products + CTA Banner
-- [x] Kategori Sayfası — Breadcrumb, filtre sidebar (model, marka, parça kategorisi), ürün grid, pagination
-- [x] Ürün Detay — Fiyat, indirim, stok, uyumlu araç, sepete ekle
-- [x] Sepet — localStorage, adet yönetimi, toplam
-- [x] Checkout — Mock ödeme, sipariş oluşturma
-- [x] Giriş/Kayıt — JWT cookie tabanlı auth, form validasyon
-- [x] Profil — Sipariş listesi, durum badge
+### Frontend Pages
+- [x] Anasayfa — Hero Slider + Stats + SearchEngine + Brand Cards + Featured Products
+- [x] Kategori Sayfası — Filtre sidebar, ürün grid, pagination
+- [x] Ürün Detay — Galeri (çoklu foto + thumbnail), favorilere ekle, WhatsApp/kopyala paylaş, stok bildirimi formu, son görüntülenenler, SEO helmet
+- [x] Sepet — localStorage, adet yönetimi
+- [x] Checkout — Kupon kodu, fatura bilgileri, misafir checkout, mock ödeme
+- [x] Favoriler Sayfası (/favoriler) — localStorage + DB sync
+- [x] Giriş/Kayıt, Profil
 
-### Premium Design (Güncellemeler — 2025)
-- [x] Cinematic hero slider (left-aligned, gradient overlays)
-- [x] Stats bar (25+ ürün, 4 marka, 14 model, 100% kalite)
-- [x] Glass morphism search engine with step indicators (01/02/03)
-- [x] Premium product cards (shimmer hover, gradient image overlay)
-- [x] Section headers with orange accent line
-- [x] Glow effects on CTA buttons
-- [x] Premium footer with CTA strip
-- [x] CSS animations (fadeInUp, slideIn)
-- [x] .glass-card, .glow-orange, .shimmer, .stripe-pattern utilities
+### Components
+- [x] Navbar: Live search overlay, favori kalp ikonu (badge sayı), mobil drawer menü
+- [x] WishlistContext + WishlistButton (her ürün kartında kalp ikonu)
+- [x] RecentlyViewed (son görüntülenen ürünler)
+- [x] PWAInstallBanner (beforeinstallprompt yakalama)
+- [x] CustomCursor (turuncu, sadece desktop)
+- [x] WhatsAppButton (z-index 50, sepet/ödeme sayfasında gizli)
+- [x] Footer: iyzico ödeme bölümü (Visa, MC, Troy, Amex, SSL, 3D Secure)
+
+### PWA & SEO
+- [x] manifest.json (theme #f97316, standalone, PNG ikonlar)
+- [x] Service Worker (cache-first static, network-first API)
+- [x] robots.txt (sitemap referansı)
+- [x] react-helmet-async (ProductDetailPage, geliştirilecek)
+
+### Product Fields
+- sku, oem_kodu: arama algoritmasına dahil
+- images[]: galeri dizisi (migration ile 3 foto/ürün)
 
 ## Test Credentials
 - Admin: admin@motoprof.com / Admin123!
-- Test user: kayıt formuyla oluşturulabilir
+- Test user: /app/memory/test_credentials.md
+
+## Demo Coupon Codes
+- MOTO10: %10 indirim (min 200₺)
+- ILKALIS: %15 indirim (min 0₺)
+- KARGO50: 50₺ sabit indirim (min 500₺)
+- WELCOME: %10 indirim (min 0₺)
 
 ## Prioritized Backlog
 
-### P0 — Admin Paneli (Faz 2)
-- [ ] admin.motoprof.com.tr subdomain
+### P0 — Admin Paneli (Faz 2 — Ayrı Emergent Projesi)
+- [ ] admin.motoprof.com.tr → ayrı Emergent projesi
 - [ ] Ürün CRUD (ekle, düzenle, sil, resim yükleme)
-- [ ] Sipariş yönetimi (durum güncelleme)
+- [ ] Sipariş yönetimi (durum güncelleme: Beklemede → Kargoya Verildi → Teslim)
 - [ ] Kullanıcı yönetimi
-- [ ] Dashboard (satış istatistikleri)
+- [ ] Dashboard (satış istatistikleri, gelir grafiği)
+- [ ] Stok uyarı sistemi + stock notification tetikleyici
 
-### P1 — E-Ticaret Geliştirmeleri
-- [x] Live search dropdown (ürün önizlemeli) ✅
-- [x] Misafir checkout ✅
-- [x] Çok kelimeli arama algoritması ✅
-- [ ] Ödeme entegrasyonu (iyzico / PayTR)
+### P1 — Ödeme Entegrasyonu
+- [ ] iyzico veya PayTR entegrasyonu (şu an mock)
 - [ ] Kargo takip entegrasyonu
-- [ ] Ürün görsel galerisi (çoklu fotoğraf)
-- [ ] Stok bildirimi (e-posta)
 
-### P2 — SEO & Performance
-- [ ] react-helmet ile meta tags
-- [ ] Sitemap.xml
-- [ ] PWA manifest
+### P2 — SEO & UX
+- [ ] react-helmet tüm sayfalara (CategoryPage, HomePage, AuthPage)
+- [ ] Ürün yorumları (1-5 yıldız)
 - [ ] Lazy loading optimization
-- [ ] Sosyal medya paylaşım kartları
+- [ ] WhatsApp numarasını gerçek numara ile güncelle (WhatsAppButton.js)
 
 ## Next Tasks
-1. Admin paneli (Faz 2) — admin.motoprof.com.tr
+1. Admin paneli (Faz 2) — ayrı Emergent projesi olarak
 2. Ödeme entegrasyonu (iyzico önerilen)
-3. WhatsApp numarasını gerçek numara ile güncelle (`WhatsAppButton.js` → `WHATSAPP_NUMBER`)
-4. PWA manifest + service worker
+3. Tüm sayfalara react-helmet SEO title/description
