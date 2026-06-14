@@ -490,11 +490,28 @@ async def add_bank(
     bank = BankAccount(
         bank_name=data["bank_name"],
         iban=data["iban"],
-        account_holder=data["account_holder"]
+        account_holder=data["account_holder"],
+        branch_name=data.get("branch_name"),
+        account_number=data.get("account_number"),
+        is_active=data.get("is_active", True),
     )
     session.add(bank)
     await session.commit()
     return {"message": "Banka eklendi", "id": str(bank.id)}
+
+
+@router.patch("/banks/{bank_id}/toggle")
+async def toggle_bank(
+    bank_id: str,
+    admin_user: User = Depends(get_admin_user),
+    session: AsyncSession = Depends(get_db)
+):
+    bank = await session.get(BankAccount, uuid.UUID(bank_id))
+    if not bank:
+        raise HTTPException(status_code=404, detail="Banka bulunamadı")
+    bank.is_active = not bank.is_active
+    await session.commit()
+    return {"message": "Güncellendi", "is_active": bank.is_active}
 
 
 @router.delete("/banks/{bank_id}")
@@ -508,6 +525,7 @@ async def delete_bank(
         await session.delete(bank)
         await session.commit()
     return {"message": "Banka silindi"}
+
 
 
 # ─── Stock Notifications ──────────────────────────────────────────────────────
@@ -581,3 +599,59 @@ async def export_orders(
     response = StreamingResponse(iter([f.getvalue()]), media_type="text/csv")
     response.headers["Content-Disposition"] = "attachment; filename=siparisler.csv"
     return response
+
+
+# ─── Sync: Ürünlerden Kategori/Marka Senkronizasyonu ─────────────────────────
+
+@router.post("/sync-categories-brands")
+async def sync_categories_brands_from_products(
+    admin_user: User = Depends(get_admin_user),
+    session: AsyncSession = Depends(get_db)
+):
+    """
+    Ürün tablosundaki mevcut brand/category değerlerini okuyup
+    Category ve Brand tablolarına eksik olanları ekler.
+    """
+    from sqlalchemy import distinct as sql_distinct
+
+    existing_cats = {r[0] for r in (await session.execute(select(Category.name))).all()}
+    cat_rows = (await session.execute(
+        select(sql_distinct(Product.category)).where(Product.category.isnot(None))
+    )).all()
+
+    added_cats = []
+    for (cat_name,) in cat_rows:
+        if not cat_name or not cat_name.strip() or cat_name in existing_cats:
+            continue
+        slug = cat_name.lower().replace(" & ", "-ve-").replace("&", "-ve-").replace(" ", "-")
+        existing_slug = await session.scalar(select(Category).where(Category.slug == slug))
+        if existing_slug:
+            slug = f"{slug}-2"
+        session.add(Category(name=cat_name, slug=slug))
+        existing_cats.add(cat_name)
+        added_cats.append(cat_name)
+
+    existing_brands = {r[0] for r in (await session.execute(select(Brand.name))).all()}
+    brand_rows = (await session.execute(
+        select(sql_distinct(Product.brand)).where(Product.brand.isnot(None))
+    )).all()
+
+    added_brands = []
+    for (brand_name,) in brand_rows:
+        if not brand_name or not brand_name.strip() or brand_name in existing_brands:
+            continue
+        slug = brand_name.lower().replace(" ", "-")
+        existing_slug = await session.scalar(select(Brand).where(Brand.slug == slug))
+        if existing_slug:
+            slug = f"{slug}-2"
+        session.add(Brand(name=brand_name, slug=slug))
+        existing_brands.add(brand_name)
+        added_brands.append(brand_name)
+
+    await session.commit()
+    return {
+        "message": "Senkronizasyon tamamlandı",
+        "added_categories": added_cats,
+        "added_brands": added_brands
+    }
+

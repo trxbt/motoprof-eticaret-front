@@ -31,8 +31,14 @@ async def stock_notify(request: Request, data: StockNotifyRequest, session: Asyn
 @router.get("/banks")
 async def get_banks(session: AsyncSession = Depends(get_db)):
     from models.models import BankAccount
-    banks = await session.scalars(select(BankAccount).where(BankAccount.is_active == True))
-    return [{"id": str(b.id), "bank_name": b.bank_name, "account_holder": b.account_holder, "iban": b.iban, "branch_name": b.branch_name, "account_number": b.account_number} for b in banks]
+    from sqlalchemy import or_, true
+    # is_active NULL ise de True say (eski kayıtlar için)
+    banks = await session.scalars(
+        select(BankAccount).where(
+            or_(BankAccount.is_active == True, BankAccount.is_active.is_(None))
+        )
+    )
+    return [{"id": str(b.id), "bank_name": b.bank_name, "account_holder": b.account_holder, "iban": b.iban, "branch_name": getattr(b, 'branch_name', None), "account_number": getattr(b, 'account_number', None)} for b in banks]
 
 
 @router.get("/sitemap.xml", include_in_schema=False)

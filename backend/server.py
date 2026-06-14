@@ -10,7 +10,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 from database import engine, Base
-from seed import seed_admin, seed_products, seed_coupons
+from seed import seed_admin, seed_products, seed_coupons, seed_categories_and_brands
 from routes import (
     auth_router, products_router, orders_router,
     wishlist_router, coupons_router, misc_router,
@@ -54,7 +54,12 @@ async def startup():
             await conn.execute(text("ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_method VARCHAR(50) DEFAULT 'iyzico'"))
             await conn.execute(text("ALTER TABLE orders ADD COLUMN IF NOT EXISTS tracking_number VARCHAR(200)"))
             await conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS cart_data JSONB DEFAULT '[]'::jsonb"))
+            # bank_accounts: eksik kolonlar ve NULL is_active düzeltmesi
+            await conn.execute(text("ALTER TABLE bank_accounts ADD COLUMN IF NOT EXISTS branch_name VARCHAR(100)"))
+            await conn.execute(text("ALTER TABLE bank_accounts ADD COLUMN IF NOT EXISTS account_number VARCHAR(50)"))
+            await conn.execute(text("UPDATE bank_accounts SET is_active = TRUE WHERE is_active IS NULL"))
             await conn.execute(text("CREATE INDEX IF NOT EXISTS idx_products_fts ON products USING GIN (to_tsvector('turkish', coalesce(name, '') || ' ' || coalesce(description, '') || ' ' || coalesce(brand, '') || ' ' || coalesce(category, '')))"))
+
     except Exception as e:
         logger.warning(f"DB init warning (tablolar mevcut olabilir): {e}")
     await seed_admin()
@@ -62,6 +67,7 @@ async def startup():
     await seed_coupons()
     from seed import seed_banks
     await seed_banks()
+    await seed_categories_and_brands()
     logger.info("MotoProf API (PostgreSQL) v2.1 başarıyla başlatıldı")
 
 
