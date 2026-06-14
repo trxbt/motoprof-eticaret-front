@@ -39,9 +39,12 @@ app.include_router(addresses_router, prefix="/api")
 
 @app.on_event("startup")
 async def startup():
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-        await conn.execute(text("ALTER TABLE orders ADD COLUMN IF NOT EXISTS iyzico_token VARCHAR(500)"))
+    try:
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+            await conn.execute(text("ALTER TABLE orders ADD COLUMN IF NOT EXISTS iyzico_token VARCHAR(500)"))
+    except Exception as e:
+        logger.warning(f"DB init warning (tablolar mevcut olabilir): {e}")
     await seed_admin()
     await seed_products()
     await seed_coupons()
