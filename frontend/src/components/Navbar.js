@@ -215,13 +215,13 @@ const Navbar = () => {
                   <button data-testid={NAVBAR.profileBtn}
                     className="flex items-center gap-2 px-3 py-2 text-xs text-neutral-400 hover:text-white hover:bg-white/5 rounded-lg transition-all">
                     <div className="w-5 h-5 bg-orange-500/20 border border-orange-500/30 rounded-full flex items-center justify-center">
-                      <span className="text-[9px] font-black text-orange-400">{user.name[0].toUpperCase()}</span>
+                      <span className="text-[9px] font-black text-orange-400">{(user.name || 'K')[0].toUpperCase()}</span>
                     </div>
-                    <span className="hidden sm:inline max-w-16 truncate font-semibold">{user.name.split(' ')[0]}</span>
+                    <span className="hidden sm:inline max-w-16 truncate font-semibold">{(user.name || 'Kullanıcı').split(' ')[0]}</span>
                   </button>
                   <div className="absolute top-full right-0 mt-2 bg-[#111111] border border-white/8 rounded-xl p-2 min-w-44 shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
                     <div className="px-3 py-2 border-b border-white/5 mb-1">
-                      <p className="text-xs font-semibold text-white">{user.name}</p>
+                      <p className="text-xs font-semibold text-white">{user.name || 'Kullanıcı'}</p>
                       <p className="text-[10px] text-neutral-600 truncate">{user.email}</p>
                     </div>
                     <Link to="/profil" className="flex items-center gap-2 px-3 py-2 text-xs text-neutral-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
