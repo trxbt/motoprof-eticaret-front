@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { AlertCircle, CheckCircle2, ArrowLeft, Mail } from 'lucide-react';
-import { API } from '../config';
+
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 const ForgotPasswordPage = () => {
   const [email, setEmail] = useState('');

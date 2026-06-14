@@ -38,3 +38,8 @@ async def get_optional_user(request: Request, session: AsyncSession = Depends(ge
         return await session.get(User, uuid.UUID(user_id))
     except Exception:
         return None
+
+async def get_admin_user(current_user: User = Depends(get_current_user)) -> User:
+    if current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Bu işlem için yönetici yetkisi gerekiyor.")
+    return current_user

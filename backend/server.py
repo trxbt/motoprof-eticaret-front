@@ -14,7 +14,7 @@ from seed import seed_admin, seed_products, seed_coupons
 from routes import (
     auth_router, products_router, orders_router,
     wishlist_router, coupons_router, misc_router,
-    payments_router, addresses_router,
+    payments_router, addresses_router, admin_router,
 )
 
 app = FastAPI(title="MotoProf API", version="2.1.0")
@@ -42,6 +42,7 @@ app.include_router(coupons_router,   prefix="/api")
 app.include_router(misc_router,      prefix="/api")
 app.include_router(payments_router,  prefix="/api")
 app.include_router(addresses_router, prefix="/api")
+app.include_router(admin_router,     prefix="/api/admin")
 
 
 @app.on_event("startup")
