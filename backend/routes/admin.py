@@ -25,27 +25,145 @@ async def get_dashboard_stats(
     admin_user: User = Depends(get_admin_user),
     session: AsyncSession = Depends(get_db)
 ):
-    revenue_query = await session.execute(
+    from datetime import datetime, timezone, timedelta
+    from sqlalchemy import or_, cast, Date as SADate
+
+    now = datetime.now(timezone.utc)
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    week_start = today_start - timedelta(days=today_start.weekday())
+    month_start = today_start.replace(day=1)
+
+    # Toplam ciro (ödendi)
+    total_revenue = (await session.execute(
         select(func.sum(Order.total)).where(Order.payment_status == "paid")
-    )
-    total_revenue = revenue_query.scalar() or 0.0
+    )).scalar() or 0.0
 
-    orders_query = await session.execute(select(func.count(Order.id)))
-    total_orders = orders_query.scalar() or 0
+    # Bugünkü ciro
+    today_revenue = (await session.execute(
+        select(func.sum(Order.total)).where(
+            Order.payment_status == "paid",
+            Order.created_at >= today_start
+        )
+    )).scalar() or 0.0
 
-    pending_query = await session.execute(
-        select(func.count(Order.id)).where(Order.payment_status == "pending")
-    )
-    pending_orders = pending_query.scalar() or 0
+    # Bu haftaki ciro
+    week_revenue = (await session.execute(
+        select(func.sum(Order.total)).where(
+            Order.payment_status == "paid",
+            Order.created_at >= week_start
+        )
+    )).scalar() or 0.0
 
-    users_query = await session.execute(select(func.count(User.id)))
-    total_users = users_query.scalar() or 0
+    # Bu ayki ciro
+    month_revenue = (await session.execute(
+        select(func.sum(Order.total)).where(
+            Order.payment_status == "paid",
+            Order.created_at >= month_start
+        )
+    )).scalar() or 0.0
+
+    # Toplam sipariş
+    total_orders = (await session.execute(select(func.count(Order.id)))).scalar() or 0
+
+    # Bugünkü sipariş
+    today_orders = (await session.execute(
+        select(func.count(Order.id)).where(Order.created_at >= today_start)
+    )).scalar() or 0
+
+    # Bu haftaki sipariş
+    week_orders = (await session.execute(
+        select(func.count(Order.id)).where(Order.created_at >= week_start)
+    )).scalar() or 0
+
+    # Onay bekleyen (pending + pending_transfer)
+    pending_orders = (await session.execute(
+        select(func.count(Order.id)).where(
+            or_(Order.payment_status == "pending", Order.payment_status == "pending_transfer")
+        )
+    )).scalar() or 0
+
+    # EFT/Havale bekleyen ayrı
+    eft_pending = (await session.execute(
+        select(func.count(Order.id)).where(
+            or_(
+                Order.payment_status == "pending_transfer",
+                Order.payment_method == "bank_transfer"
+            ),
+            Order.payment_status != "paid"
+        )
+    )).scalar() or 0
+
+    # Toplam üye
+    total_users = (await session.execute(select(func.count(User.id)))).scalar() or 0
+
+    # Kritik stok (stok <= 3)
+    critical_stock = (await session.execute(
+        select(func.count(Product.id)).where(Product.stock <= 3, Product.stock >= 0)
+    )).scalar() or 0
+
+    # Sıfır stok
+    out_of_stock = (await session.execute(
+        select(func.count(Product.id)).where(Product.stock == 0)
+    )).scalar() or 0
+
+    # Kritik stok ürünleri listesi
+    critical_products = (await session.execute(
+        select(Product).where(Product.stock <= 5).order_by(Product.stock.asc()).limit(10)
+    )).scalars().all()
 
     return {
         "total_revenue": float(total_revenue),
+        "today_revenue": float(today_revenue),
+        "week_revenue": float(week_revenue),
+        "month_revenue": float(month_revenue),
         "total_orders": total_orders,
+        "today_orders": today_orders,
+        "week_orders": week_orders,
         "pending_orders": pending_orders,
-        "total_users": total_users
+        "eft_pending": eft_pending,
+        "total_users": total_users,
+        "critical_stock": critical_stock,
+        "out_of_stock": out_of_stock,
+        "critical_products": [
+            {"id": str(p.id), "name": p.name, "stock": p.stock, "image_url": p.image, "brand": p.brand}
+            for p in critical_products
+        ]
+    }
+
+
+@router.get("/alerts")
+async def get_alerts(
+    admin_user: User = Depends(get_admin_user),
+    session: AsyncSession = Depends(get_db)
+):
+    """Sidebar badge verileri — hafif endpoint, sık çağrılır"""
+    from sqlalchemy import or_
+    pending_orders = (await session.execute(
+        select(func.count(Order.id)).where(
+            or_(Order.payment_status == "pending", Order.payment_status == "pending_transfer")
+        )
+    )).scalar() or 0
+
+    eft_pending = (await session.execute(
+        select(func.count(Order.id)).where(
+            Order.payment_method == "bank_transfer",
+            Order.payment_status != "paid"
+        )
+    )).scalar() or 0
+
+    critical_stock = (await session.execute(
+        select(func.count(Product.id)).where(Product.stock <= 3, Product.stock >= 0)
+    )).scalar() or 0
+
+    stock_notifications = (await session.execute(
+        select(func.count()).select_from(__import__('models.models', fromlist=['StockNotification']).StockNotification)
+    )).scalar() or 0
+
+    return {
+        "pending_orders": pending_orders,
+        "eft_pending": eft_pending,
+        "critical_stock": critical_stock,
+        "stock_notifications": stock_notifications,
     }
 
 
@@ -65,23 +183,142 @@ async def get_recent_orders(
     return [order_to_dict(o) for o in result.scalars().all()]
 
 
+@router.get("/dashboard/chart")
+async def get_chart_data(
+    days: int = 7,
+    admin_user: User = Depends(get_admin_user),
+    session: AsyncSession = Depends(get_db)
+):
+    """Son N gün günlük sipariş sayısı ve ciro"""
+    from datetime import datetime, timezone, timedelta
+    from sqlalchemy import text as sql_text
+    days = min(days, 90)
+    result = await session.execute(
+        sql_text("""
+            SELECT
+                DATE(created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Istanbul') as day,
+                COUNT(*) as order_count,
+                COALESCE(SUM(CASE WHEN payment_status = 'paid' THEN total ELSE 0 END), 0) as revenue
+            FROM orders
+            WHERE created_at >= NOW() - INTERVAL ':days days'
+            GROUP BY day
+            ORDER BY day ASC
+        """).bindparams(days=days)
+    )
+    rows = result.fetchall()
+    return [
+        {"date": str(r[0]), "orders": r[1], "revenue": float(r[2])}
+        for r in rows
+    ]
+
+
 # ─── Orders ───────────────────────────────────────────────────────────────────
 
 @router.get("/orders")
 async def get_all_orders(
     status: Optional[str] = None,
     payment_status: Optional[str] = None,
+    date_range: Optional[str] = None,
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
     admin_user: User = Depends(get_admin_user),
     session: AsyncSession = Depends(get_db)
 ):
     from sqlalchemy.orm import selectinload
+    from datetime import datetime, timezone, timedelta
+
     stmt = select(Order).options(selectinload(Order.items)).order_by(Order.created_at.desc())
+
     if status:
         stmt = stmt.where(Order.status == status)
     if payment_status:
         stmt = stmt.where(Order.payment_status == payment_status)
+
+    # Tarih aralığı filtresi
+    now = datetime.now(timezone.utc)
+    if date_range == "today":
+        start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        stmt = stmt.where(Order.created_at >= start)
+    elif date_range == "week":
+        start = now - timedelta(days=7)
+        stmt = stmt.where(Order.created_at >= start)
+    elif date_range == "month":
+        start = now - timedelta(days=30)
+        stmt = stmt.where(Order.created_at >= start)
+    elif date_range == "custom" and date_from and date_to:
+        try:
+            df = datetime.fromisoformat(date_from).replace(tzinfo=timezone.utc)
+            dt = datetime.fromisoformat(date_to).replace(hour=23, minute=59, second=59, tzinfo=timezone.utc)
+            stmt = stmt.where(Order.created_at >= df, Order.created_at <= dt)
+        except ValueError:
+            pass
+
     result = await session.execute(stmt)
     return [order_to_dict(o) for o in result.scalars().all()]
+
+
+@router.post("/orders/bulk-status")
+async def bulk_update_order_status(
+    request: Request,
+    admin_user: User = Depends(get_admin_user),
+    session: AsyncSession = Depends(get_db)
+):
+    """Toplu sipariş durum güncelleme"""
+    data = await request.json()
+    order_ids = data.get("order_ids", [])
+    new_status = data.get("status")
+    new_payment_status = data.get("payment_status")
+
+    if not order_ids or not new_status:
+        raise HTTPException(status_code=400, detail="order_ids ve status gerekli")
+
+    updated = 0
+    for oid in order_ids:
+        try:
+            result = await session.execute(select(Order).where(Order.id == uuid.UUID(oid)))
+            order = result.scalar_one_or_none()
+            if order:
+                order.status = new_status
+                if new_payment_status:
+                    order.payment_status = new_payment_status
+                updated += 1
+        except (ValueError, Exception):
+            continue
+
+    await session.commit()
+    return {"message": f"{updated} sipariş güncellendi", "updated": updated}
+
+
+@router.post("/orders/{order_id}/cancel")
+async def cancel_order(
+    order_id: uuid.UUID,
+    admin_user: User = Depends(get_admin_user),
+    session: AsyncSession = Depends(get_db)
+):
+    """Siparişi iptal et ve stok iade et"""
+    from sqlalchemy.orm import selectinload
+    result = await session.execute(
+        select(Order).where(Order.id == order_id).options(selectinload(Order.items))
+    )
+    order = result.scalar_one_or_none()
+    if not order:
+        raise HTTPException(status_code=404, detail="Sipariş bulunamadı")
+    if order.status == "cancelled":
+        raise HTTPException(status_code=400, detail="Sipariş zaten iptal edilmiş")
+
+    # Stok iade et
+    for item in order.items:
+        try:
+            prod = await session.get(Product, uuid.UUID(item.product_id))
+            if prod:
+                prod.stock = (prod.stock or 0) + item.quantity
+        except (ValueError, Exception):
+            pass
+
+    order.status = "cancelled"
+    order.payment_status = "refunded" if order.payment_status == "paid" else "cancelled"
+    await session.commit()
+    return {"message": "Sipariş iptal edildi, stok iade edildi"}
 
 
 @router.patch("/orders/{order_id}/status")
@@ -538,10 +775,45 @@ async def get_notifications(
     result = await session.execute(
         select(StockNotification).order_by(StockNotification.created_at.desc())
     )
+    notifications = result.scalars().all()
+
+    # Ürün bilgilerini toplu çek (N+1 sorgu yerine)
+    product_ids = list({n.product_id for n in notifications})
+    products_map = {}
+    if product_ids:
+        try:
+            prod_result = await session.execute(
+                select(Product).where(Product.slug.in_(product_ids))
+            )
+            for p in prod_result.scalars().all():
+                products_map[p.slug] = p
+            # UUID ile de dene
+            uuid_ids = []
+            for pid in product_ids:
+                try:
+                    uuid_ids.append(uuid.UUID(pid))
+                except ValueError:
+                    pass
+            if uuid_ids:
+                prod_result2 = await session.execute(
+                    select(Product).where(Product.id.in_(uuid_ids))
+                )
+                for p in prod_result2.scalars().all():
+                    products_map[str(p.id)] = p
+        except Exception:
+            pass
+
     return [
-        {"id": str(n.id), "email": n.email, "product_id": n.product_id,
-         "created_at": n.created_at.isoformat()}
-        for n in result.scalars().all()
+        {
+            "id": str(n.id),
+            "email": n.email,
+            "product_id": n.product_id,
+            "created_at": n.created_at.isoformat(),
+            "product_name": products_map.get(n.product_id, {}).name if hasattr(products_map.get(n.product_id, {}), 'name') else "Bilinmeyen Ürün",
+            "product_image": products_map.get(n.product_id, {}).image if hasattr(products_map.get(n.product_id, {}), 'image') else None,
+            "product_stock": products_map.get(n.product_id, {}).stock if hasattr(products_map.get(n.product_id, {}), 'stock') else None,
+        }
+        for n in notifications
     ]
 
 
@@ -561,6 +833,7 @@ async def send_stock_notification(
     await session.commit()
     # TODO: Gerçek e-posta entegrasyonu (SMTP/SendGrid) buraya eklenecek
     return {"message": f"{count} kişiye stok bildirimi gönderildi ve listeden çıkarıldı."}
+
 
 
 # ─── Export ───────────────────────────────────────────────────────────────────
