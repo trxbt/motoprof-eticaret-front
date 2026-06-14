@@ -20,6 +20,7 @@ import AuthPage from './pages/AuthPage';
 import ProfilePage from './pages/ProfilePage';
 import WishlistPage from './pages/WishlistPage';
 import PaymentResultPage from './pages/PaymentResultPage';
+import OrderDetailPage from './pages/OrderDetailPage';
 import './App.css';
 
 function App() {
@@ -47,6 +48,11 @@ function App() {
                 <Route path="/profil" element={
                   <ProtectedRoute>
                     <ProfilePage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/siparislerim/:orderId" element={
+                  <ProtectedRoute>
+                    <OrderDetailPage />
                   </ProtectedRoute>
                 } />
               </Routes>

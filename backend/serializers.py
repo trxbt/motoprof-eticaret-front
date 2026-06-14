@@ -1,4 +1,4 @@
-from models.models import User, Product, Order
+from models.models import User, Product, Order, Address
 
 
 def user_to_dict(u: User) -> dict:
@@ -40,4 +40,13 @@ def order_to_dict(o: Order) -> dict:
             for i in o.items
         ],
         "created_at": o.created_at.isoformat() if o.created_at else None,
+    }
+
+
+def address_to_dict(a: Address) -> dict:
+    return {
+        "id": str(a.id), "title": a.title, "name": a.name,
+        "phone": a.phone, "address": a.address, "city": a.city,
+        "district": a.district, "is_default": a.is_default,
+        "created_at": a.created_at.isoformat() if a.created_at else None,
     }

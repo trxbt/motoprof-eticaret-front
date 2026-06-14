@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { CheckCircle, CreditCard, Lock, Package, User, ArrowRight, FileText, Building2, UserCheck, ChevronDown, Tag, X } from 'lucide-react';
+import { CreditCard, Lock, Package, User, ArrowRight, FileText, Building2, UserCheck, ChevronDown, Tag, X, MapPin, ChevronRight, Plus } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 import { CHECKOUT } from '../constants/testIds';
@@ -20,11 +20,15 @@ const CheckoutPage = () => {
 
   const [form, setForm] = useState({
     shipping_name: user?.name || '',
-    shipping_phone: user?.phone || '',
+    shipping_phone: '',
     shipping_address: '',
     shipping_city: '',
     guest_email: '',
   });
+
+  const [savedAddresses, setSavedAddresses] = useState([]);
+  const [selectedAddrId, setSelectedAddrId] = useState(null);
+  const [showAddrPicker, setShowAddrPicker] = useState(false);
 
   const [wantsInvoice, setWantsInvoice] = useState(false);
   const [invoiceType, setInvoiceType] = useState('bireysel');
@@ -44,6 +48,32 @@ const CheckoutPage = () => {
   const [coupon, setCoupon] = useState(null);
   const [couponLoading, setCouponLoading] = useState(false);
   const [couponError, setCouponError] = useState('');
+
+  // Fetch saved addresses for logged-in users
+  useEffect(() => {
+    if (user) {
+      axios.get(`${API}/addresses`, { withCredentials: true })
+        .then(({ data }) => {
+          setSavedAddresses(data);
+          // Auto-select default address
+          const def = data.find(a => a.is_default) || data[0];
+          if (def) applyAddress(def);
+        })
+        .catch(() => {});
+    }
+  }, [user]);
+
+  const applyAddress = (addr) => {
+    setForm(f => ({
+      ...f,
+      shipping_name: addr.name,
+      shipping_phone: addr.phone,
+      shipping_address: addr.address,
+      shipping_city: addr.city,
+    }));
+    setSelectedAddrId(addr.id);
+    setShowAddrPicker(false);
+  };
 
   const finalTotal = coupon ? Math.max(0, total - coupon.discount) : total;
 
@@ -149,6 +179,63 @@ const CheckoutPage = () => {
         {/* Shipping Form */}
         <div className="lg:col-span-3">
           <form onSubmit={handleSubmit} data-testid={CHECKOUT.form}>
+
+            {/* Saved Address Picker — only for logged-in users with saved addresses */}
+            {user && savedAddresses.length > 0 && (
+              <div className={sectionCls}>
+                <h2 className="text-sm font-bold text-white uppercase tracking-wider mb-3 flex items-center gap-2">
+                  <MapPin size={16} className="text-orange-500" />
+                  Kayıtlı Adreslerimden Seç
+                </h2>
+
+                {/* Current selection */}
+                {selectedAddrId && (() => {
+                  const sel = savedAddresses.find(a => a.id === selectedAddrId);
+                  return sel ? (
+                    <div className="flex items-center justify-between bg-orange-500/5 border border-orange-500/30 rounded-xl px-4 py-3 mb-2">
+                      <div>
+                        <p className="text-xs font-bold text-orange-400">{sel.title}</p>
+                        <p className="text-sm text-white">{sel.name} — {sel.city}</p>
+                        <p className="text-xs text-neutral-500 truncate max-w-xs">{sel.address}</p>
+                      </div>
+                      <button onClick={() => setShowAddrPicker(v => !v)}
+                        className="text-xs text-orange-400 hover:text-orange-300 font-semibold flex items-center gap-1 ml-3 flex-shrink-0">
+                        Değiştir <ChevronRight size={13} />
+                      </button>
+                    </div>
+                  ) : null;
+                })()}
+
+                {/* Dropdown list */}
+                {showAddrPicker && (
+                  <div className="space-y-2 mt-2">
+                    {savedAddresses.map(addr => (
+                      <button key={addr.id} onClick={() => applyAddress(addr)}
+                        className={`w-full text-left flex items-center justify-between bg-[#0d0d0d] border rounded-xl px-4 py-3 transition-colors hover:border-orange-500/40 ${addr.id === selectedAddrId ? 'border-orange-500/40' : 'border-[#2a2a2a]'}`}>
+                        <div>
+                          <p className="text-xs font-bold text-neutral-400">{addr.title}</p>
+                          <p className="text-sm text-white">{addr.name}</p>
+                          <p className="text-xs text-neutral-500 truncate max-w-xs">{addr.address}, {addr.city}</p>
+                        </div>
+                        {addr.id === selectedAddrId && <div className="w-4 h-4 bg-orange-500 rounded-full flex-shrink-0 ml-3" />}
+                      </button>
+                    ))}
+                    <Link to="/profil" onClick={() => { document.querySelector('#profil-tab-addresses')?.click(); }}
+                      className="flex items-center gap-1.5 text-xs text-neutral-500 hover:text-orange-400 transition-colors pt-1 px-1">
+                      <Plus size={12} /> Yeni adres ekle
+                    </Link>
+                  </div>
+                )}
+
+                {!selectedAddrId && (
+                  <button onClick={() => setShowAddrPicker(v => !v)}
+                    className="w-full flex items-center justify-between bg-[#0d0d0d] border border-[#2a2a2a] hover:border-orange-500/30 rounded-xl px-4 py-3 transition-colors text-sm text-neutral-400">
+                    <span>Bir adres seçin</span>
+                    <ChevronDown size={15} />
+                  </button>
+                )}
+              </div>
+            )}
 
             {/* Guest email - only if not logged in */}
             {!user && (

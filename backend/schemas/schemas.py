@@ -51,6 +51,26 @@ class WishlistToggle(BaseModel):
     product_id: str
 
 
+class AddressCreate(BaseModel):
+    title:    str
+    name:     str
+    phone:    str
+    address:  str
+    city:     str
+    district: Optional[str] = None
+    is_default: bool = False
+
+
+class AddressUpdate(BaseModel):
+    title:    Optional[str] = None
+    name:     Optional[str] = None
+    phone:    Optional[str] = None
+    address:  Optional[str] = None
+    city:     Optional[str] = None
+    district: Optional[str] = None
+    is_default: Optional[bool] = None
+
+
 class StockNotifyRequest(BaseModel):
     product_id: str
     email: str

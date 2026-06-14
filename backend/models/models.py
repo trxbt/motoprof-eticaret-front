@@ -15,8 +15,9 @@ class User(Base):
     name:          Mapped[str]       = mapped_column(String(255), nullable=False)
     role:          Mapped[str]       = mapped_column(String(50), default="user")
     created_at:    Mapped[datetime]  = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
-    orders:   Mapped[List["Order"]]    = relationship(back_populates="user")
-    wishlist: Mapped[List["Wishlist"]] = relationship(back_populates="user", cascade="all, delete-orphan")
+    orders:    Mapped[List["Order"]]    = relationship(back_populates="user")
+    wishlist:  Mapped[List["Wishlist"]] = relationship(back_populates="user", cascade="all, delete-orphan")
+    addresses: Mapped[List["Address"]]  = relationship(back_populates="user", cascade="all, delete-orphan")
 
 
 class Product(Base):
@@ -89,6 +90,21 @@ class StockNotification(Base):
     email:      Mapped[str]       = mapped_column(String(255), nullable=False)
     notified:   Mapped[bool]      = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime]  = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+
+class Address(Base):
+    __tablename__ = "addresses"
+    id:         Mapped[uuid.UUID]     = mapped_column(PGUUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id:    Mapped[uuid.UUID]     = mapped_column(PGUUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    title:      Mapped[str]           = mapped_column(String(100), nullable=False)
+    name:       Mapped[str]           = mapped_column(String(255), nullable=False)
+    phone:      Mapped[str]           = mapped_column(String(50), nullable=False)
+    address:    Mapped[str]           = mapped_column(Text, nullable=False)
+    city:       Mapped[str]           = mapped_column(String(100), nullable=False)
+    district:   Mapped[Optional[str]] = mapped_column(String(100))
+    is_default: Mapped[bool]          = mapped_column(Boolean, default=False)
+    created_at: Mapped[datetime]      = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    user: Mapped["User"] = relationship(back_populates="addresses")
 
 
 class Coupon(Base):
