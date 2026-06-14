@@ -83,6 +83,9 @@ motoprof.com.tr için motosiklet yedek parça e-ticaret sitesi. Hedef: premium d
 - [x] iyzico footer güvenlik rozetleri
 - [x] MongoDB → PostgreSQL migration (SQLAlchemy + asyncpg)
 - [x] server.py refaktörü (routes/models/schemas/seed.py)
+- [x] **Adres Yönetimi** — Profil'de Adreslerim sekmesi, Ekle/Düzenle/Sil/Varsayılan
+- [x] **Sipariş Detay Sayfası** — /siparislerim/:orderId, ürünler + ödeme özeti + teslimat
+- [x] **Checkout'ta Kayıtlı Adres Seçici** — giriş yapan kullanıcıya adres otomatik doldurma
 - [x] **iyzico Sandbox ödeme entegrasyonu** (gerçek iyzico API)
 - [x] PaymentResultPage (/odeme-sonuc?status=success|failed)
 - [x] Coolify deployment dosyaları (docker-compose.yml, Dockerfiles, nginx.conf)
