@@ -20,6 +20,8 @@ services:
     networks:
       - motoprof_net
       - coolify
+    labels:
+      - "coolify.managed=true"
 
   # ── Frontend (React + Nginx) ──────────────────────────────────
   frontend:
@@ -38,6 +40,8 @@ services:
       - motoprof_net
       - coolify
       - coolify-ingress
+    labels:
+      - "coolify.managed=true"
 
 networks:
   motoprof_net:
