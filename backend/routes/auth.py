@@ -23,7 +23,7 @@ async def register(request: Request, data: RegisterRequest, response: Response, 
     await session.commit()
     await session.refresh(user)
     token = create_token(str(user.id))
-    response.set_cookie("access_token", token, httponly=True, secure=True, samesite="lax", max_age=JWT_EXP_DAYS * 86400)
+    response.set_cookie("access_token", token, httponly=True, secure=True, samesite="none", domain=".motoprof.com.tr", max_age=JWT_EXP_DAYS * 86400)
     return {"message": "Kayıt başarılı", "user": user_to_dict(user)}
 
 
@@ -34,13 +34,13 @@ async def login(request: Request, data: LoginRequest, response: Response, sessio
     if not user or not verify_password(data.password, user.password_hash):
         raise HTTPException(status_code=401, detail="E-posta veya şifre hatalı")
     token = create_token(str(user.id))
-    response.set_cookie("access_token", token, httponly=True, secure=True, samesite="lax", max_age=JWT_EXP_DAYS * 86400)
+    response.set_cookie("access_token", token, httponly=True, secure=True, samesite="none", domain=".motoprof.com.tr", max_age=JWT_EXP_DAYS * 86400)
     return {"message": "Giriş başarılı", "user": user_to_dict(user)}
 
 
 @router.post("/logout")
 async def logout(response: Response):
-    response.delete_cookie("access_token", secure=True, samesite="lax")
+    response.delete_cookie("access_token", secure=True, samesite="none", domain=".motoprof.com.tr")
     return {"message": "Çıkış yapıldı"}
 
 

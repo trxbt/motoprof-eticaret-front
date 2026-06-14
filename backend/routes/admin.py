@@ -21,7 +21,7 @@ async def get_dashboard_stats(
 ):
     # Total Revenue (Paid orders)
     revenue_query = await session.execute(
-        select(func.sum(Order.total_amount)).where(Order.payment_status == "paid")
+        select(func.sum(Order.total)).where(Order.payment_status == "paid")
     )
     total_revenue = revenue_query.scalar() or 0.0
 
@@ -54,7 +54,7 @@ async def get_all_orders(
     from sqlalchemy.orm import selectinload
     result = await session.execute(
         select(Order)
-        .options(selectinload(Order.items).selectinload(OrderItem.product))
+        .options(selectinload(Order.items))
         .order_by(Order.created_at.desc())
     )
     return [order_to_dict(o) for o in result.scalars().all()]
