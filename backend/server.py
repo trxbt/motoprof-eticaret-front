@@ -52,6 +52,7 @@ async def startup():
             await conn.run_sync(Base.metadata.create_all)
             await conn.execute(text("ALTER TABLE orders ADD COLUMN IF NOT EXISTS iyzico_token VARCHAR(500)"))
             await conn.execute(text("ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_method VARCHAR(50) DEFAULT 'iyzico'"))
+            await conn.execute(text("ALTER TABLE orders ADD COLUMN IF NOT EXISTS tracking_number VARCHAR(200)"))
             await conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS cart_data JSONB DEFAULT '[]'::jsonb"))
             await conn.execute(text("CREATE INDEX IF NOT EXISTS idx_products_fts ON products USING GIN (to_tsvector('turkish', coalesce(name, '') || ' ' || coalesce(description, '') || ' ' || coalesce(brand, '') || ' ' || coalesce(category, '')))"))
     except Exception as e:

@@ -4,17 +4,22 @@ from models.models import User, Product, Order, Address
 def user_to_dict(u: User) -> dict:
     return {
         "id": str(u.id), "email": u.email, "name": u.name,
-        "role": u.role, "cart_data": u.cart_data if u.cart_data else [], "created_at": u.created_at.isoformat(),
+        "role": u.role, "cart_data": u.cart_data if u.cart_data else [],
+        "created_at": u.created_at.isoformat(),
     }
 
 
 def product_to_dict(p: Product) -> dict:
     imgs = p.images if p.images else ([p.image] if p.image else [])
+    # image_url: admin paneli image_url bekliyor, bunu image'dan türet
+    image_url = p.image or (imgs[0] if imgs else None)
     return {
         "id": str(p.id), "name": p.name, "slug": p.slug,
         "description": p.description, "price": float(p.price),
         "original_price": float(p.original_price) if p.original_price else None,
-        "image": p.image, "images": imgs, "brand": p.brand, "model": p.model,
+        "image": p.image, "images": imgs,
+        "image_url": image_url,
+        "brand": p.brand, "model": p.model,
         "model_id": p.model_id, "year_range": p.year_range, "category": p.category,
         "stock": p.stock, "sku": p.sku, "oem_kodu": p.oem_kodu,
         "is_featured": p.is_featured,
@@ -29,6 +34,8 @@ def order_to_dict(o: Order) -> dict:
         "shipping_name": o.shipping_name, "shipping_phone": o.shipping_phone,
         "shipping_address": o.shipping_address, "shipping_city": o.shipping_city,
         "status": o.status, "payment_status": o.payment_status,
+        "payment_method": getattr(o, "payment_method", "iyzico"),
+        "tracking_number": getattr(o, "tracking_number", None),
         "invoice": o.invoice, "coupon_code": o.coupon_code,
         "discount": float(o.discount) if o.discount else None,
         "items": [
