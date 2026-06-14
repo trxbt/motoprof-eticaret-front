@@ -60,6 +60,11 @@ async def seed_admin():
                 session.add(User(email=ADMIN_EMAIL, name="Admin", role="admin", password_hash=hash_password(ADMIN_PASS)))
                 await session.commit()
                 logger.info(f"Admin kullanıcı oluşturuldu: {ADMIN_EMAIL}")
+            else:
+                existing.role = "admin"
+                existing.password_hash = hash_password(ADMIN_PASS)
+                await session.commit()
+                logger.info(f"Mevcut kullanıcı admin yapıldı ve şifresi güncellendi: {ADMIN_EMAIL}")
         except IntegrityError as e:
             await session.rollback()
             if "users_email_key" in str(e):
