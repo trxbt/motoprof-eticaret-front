@@ -5,7 +5,13 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-DATABASE_URL = os.environ.get("DATABASE_URL")
+_raw_db_url = os.environ.get("DATABASE_URL", "")
+if _raw_db_url.startswith("postgres://"):
+    DATABASE_URL = _raw_db_url.replace("postgres://", "postgresql+asyncpg://", 1)
+elif _raw_db_url.startswith("postgresql://"):
+    DATABASE_URL = _raw_db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+else:
+    DATABASE_URL = _raw_db_url
 JWT_SECRET   = os.environ.get("JWT_SECRET")
 JWT_EXP_DAYS = 30
 ADMIN_EMAIL  = os.environ.get("ADMIN_EMAIL", "admin@motoprof.com")
