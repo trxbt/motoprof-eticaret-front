@@ -420,10 +420,10 @@ const Navbar = () => {
               {user ? (
                 <div className="flex items-center gap-3 bg-[#111] border border-[#222] rounded-2xl p-3.5">
                   <div className="w-10 h-10 bg-orange-500/15 border border-orange-500/25 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-base font-black text-orange-400">{user.name[0].toUpperCase()}</span>
+                    <span className="text-base font-black text-orange-400">{(user.name || 'K')[0].toUpperCase()}</span>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-white truncate">{user.name}</p>
+                    <p className="text-sm font-bold text-white truncate">{user.name || 'Kullanıcı'}</p>
                     <p className="text-xs text-neutral-500 truncate">{user.email}</p>
                   </div>
                   <Link to="/profil" onClick={closeMenu}
