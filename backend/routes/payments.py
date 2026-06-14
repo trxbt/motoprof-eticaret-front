@@ -92,7 +92,7 @@ async def initialize_iyzico(
         calculated_items_total += line_total
 
         valid_items.append({
-            "product_id": real_product.id,
+            "product_id": str(real_product.id),
             "product_name": real_product.name,
             "product_image": real_product.image,
             "price": real_price,
