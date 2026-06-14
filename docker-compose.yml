@@ -27,13 +27,16 @@ services:
       args:
         REACT_APP_BACKEND_URL: ${SITE_URL}
     restart: always
-    ports:
-      - "80:80"
+    expose:
+      - "80"
     depends_on:
       - backend
     networks:
       - motoprof_net
+      - coolify
 
 networks:
   motoprof_net:
     driver: bridge
+  coolify:
+    external: true
