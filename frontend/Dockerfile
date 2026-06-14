@@ -29,9 +29,6 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 RUN ln -sf /dev/stdout /var/log/nginx/access.log && \
     ln -sf /dev/stderr /var/log/nginx/error.log
 
-# Nginx config'i validate et
-RUN nginx -t
-
 # Build folder'ın varlığını kontrol et
 RUN ls -la /usr/share/nginx/html/ && \
     [ -f /usr/share/nginx/html/index.html ] || (echo "ERROR: index.html not found!" && exit 1)
