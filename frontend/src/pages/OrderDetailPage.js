@@ -13,10 +13,11 @@ const STATUS_MAP = {
 };
 
 const PAYMENT_MAP = {
-  paid:       { label: 'Ödendi',          color: 'text-green-400 bg-green-400/10 border-green-400/20' },
-  pending:    { label: 'Ödeme Bekleniyor', color: 'text-yellow-400 bg-yellow-400/10 border-yellow-400/20' },
-  failed:     { label: 'Ödeme Başarısız',  color: 'text-red-400 bg-red-400/10 border-red-400/20' },
-  mock_paid:  { label: 'Ödendi',          color: 'text-green-400 bg-green-400/10 border-green-400/20' },
+  paid:             { label: 'Ödendi',          color: 'text-green-400 bg-green-400/10 border-green-400/20' },
+  pending:          { label: 'Ödeme Bekleniyor', color: 'text-yellow-400 bg-yellow-400/10 border-yellow-400/20' },
+  failed:           { label: 'Ödeme Başarısız',  color: 'text-red-400 bg-red-400/10 border-red-400/20' },
+  mock_paid:        { label: 'Ödendi',          color: 'text-green-400 bg-green-400/10 border-green-400/20' },
+  pending_transfer: { label: 'EFT/Havale Bekleniyor', color: 'text-orange-400 bg-orange-400/10 border-orange-400/20' },
 };
 
 const sectionCls = 'bg-[#111] border border-[#2a2a2a] rounded-2xl p-5 mb-4';
@@ -143,6 +144,12 @@ const OrderDetailPage = () => {
             <span className="text-xs text-neutral-500">Ödeme Durumu</span>
             <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${payment.color}`}>{payment.label}</span>
           </div>
+          {order.payment_method === 'bank_transfer' && order.payment_status === 'pending_transfer' && (
+            <div className="mt-3 p-3 bg-[#1a1a1a] border border-orange-500/20 rounded-lg">
+              <p className="text-xs text-orange-400 font-semibold mb-1">Lütfen ödemenizi gerçekleştirin:</p>
+              <p className="text-xs text-neutral-400">Sipariş tutarını banka hesabımıza Havale/EFT ile iletirken açıklama kısmına sipariş numaranızı (<span className="text-white font-mono">#{order.id?.slice(-10).toUpperCase()}</span>) yazmayı unutmayınız.</p>
+            </div>
+          )}
         </div>
       </div>
 

@@ -263,3 +263,94 @@ async def iyzico_callback(
 
     html = f'<html><head><meta http-equiv="refresh" content="0;url={redirect_url}" /></head><body>Yönlendiriliyor...</body></html>'
     return Response(content=html, media_type="text/html")
+
+
+# ─── Bank Transfer: Create order with Havale/EFT method ──────────────────────
+@router.post("/bank-transfer")
+async def bank_transfer(
+    data: OrderCreate,
+    request: Request,
+    session: AsyncSession = Depends(get_db),
+):
+    from models.models import Product, Coupon
+    user = await get_optional_user(request, session)
+    if not user and not data.guest_email:
+        raise HTTPException(status_code=400, detail="Misafir alışverişi için e-posta gerekli")
+
+    product_ids = []
+    for item in data.items:
+        if item.product_id:
+            try:
+                product_ids.append(uuid.UUID(item.product_id))
+            except ValueError:
+                pass
+                
+    products_db = await session.scalars(select(Product).where(Product.id.in_(product_ids))) if product_ids else []
+    product_map = {str(p.id): p for p in products_db}
+
+    calculated_items_total = 0.0
+    valid_items = []
+
+    for item in data.items:
+        real_product = product_map.get(str(item.product_id))
+        if not real_product:
+            raise HTTPException(status_code=400, detail=f"Geçersiz ürün: {item.product_name}")
+        
+        real_price = float(real_product.price)
+        line_total = real_price * item.quantity
+        calculated_items_total += line_total
+
+        valid_items.append({
+            "product_id": str(real_product.id),
+            "product_name": real_product.name,
+            "product_image": real_product.image,
+            "price": real_price,
+            "quantity": item.quantity
+        })
+
+    calculated_items_total = round(calculated_items_total, 2)
+    
+    final_discount = 0.0
+    if data.coupon_code:
+        coupon = await session.scalar(select(Coupon).where(Coupon.code == data.coupon_code, Coupon.active == True))
+        if coupon and calculated_items_total >= coupon.min_order:
+            if coupon.type == "percent":
+                final_discount = (calculated_items_total * coupon.value) / 100.0
+            elif coupon.type == "fixed":
+                final_discount = float(coupon.value)
+    
+    final_discount = round(final_discount, 2)
+    calculated_paid_price = round(calculated_items_total - final_discount, 2)
+
+    order = Order(
+        user_id=user.id if user else None,
+        guest_email=data.guest_email if not user else None,
+        total=calculated_paid_price,
+        shipping_name=data.shipping_name,
+        shipping_phone=data.shipping_phone,
+        shipping_address=data.shipping_address,
+        shipping_city=data.shipping_city,
+        invoice=data.invoice.model_dump() if data.invoice else None,
+        coupon_code=data.coupon_code if final_discount > 0 else None,
+        discount=final_discount,
+        payment_method="bank_transfer",
+        payment_status="pending_transfer",
+    )
+    session.add(order)
+    await session.flush()
+
+    for item in valid_items:
+        session.add(OrderItem(
+            order_id=order.id,
+            product_id=item["product_id"],
+            product_name=item["product_name"],
+            product_image=item["product_image"],
+            price=item["price"],
+            quantity=item["quantity"],
+        ))
+    await session.commit()
+
+    return {
+        "status": "success",
+        "order_id": str(order.id)
+    }

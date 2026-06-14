@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { CreditCard, Lock, Package, User, ArrowRight, FileText, Building2, UserCheck, ChevronDown, Tag, X, MapPin, ChevronRight, Plus } from 'lucide-react';
+import { CreditCard, Lock, Package, User, ArrowRight, FileText, Building2, UserCheck, ChevronDown, Tag, X, MapPin, ChevronRight, Plus, Building } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 import { CHECKOUT } from '../constants/testIds';
@@ -29,6 +29,8 @@ const CheckoutPage = () => {
   const [savedAddresses, setSavedAddresses] = useState([]);
   const [selectedAddrId, setSelectedAddrId] = useState(null);
   const [showAddrPicker, setShowAddrPicker] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState('iyzico');
+  const [banks, setBanks] = useState([]);
 
   const [wantsInvoice, setWantsInvoice] = useState(false);
   const [invoiceType, setInvoiceType] = useState('bireysel');
@@ -61,6 +63,7 @@ const CheckoutPage = () => {
         })
         .catch(() => {});
     }
+    axios.get(`${API}/misc/banks`).then(({ data }) => setBanks(data)).catch(() => {});
   }, [user]);
 
   const applyAddress = (addr) => {
@@ -141,12 +144,18 @@ const CheckoutPage = () => {
         coupon_code: coupon?.code || null,
         discount: coupon?.discount || null,
       };
-      const { data } = await axios.post(`${API}/payments/iyzico/initialize`, orderData, { withCredentials: true });
-      if (data.paymentPageUrl) {
-        window.location.href = data.paymentPageUrl;
+      
+      if (paymentMethod === 'iyzico') {
+        const { data } = await axios.post(`${API}/payments/iyzico/initialize`, orderData, { withCredentials: true });
+        if (data.paymentPageUrl) {
+          window.location.href = data.paymentPageUrl;
+        } else {
+          setError('Ödeme sayfası alınamadı. Lütfen tekrar deneyin.');
+          setLoading(false);
+        }
       } else {
-        setError('Ödeme sayfası alınamadı. Lütfen tekrar deneyin.');
-        setLoading(false);
+        const { data } = await axios.post(`${API}/payments/bank-transfer`, orderData, { withCredentials: true });
+        navigate(`/odeme-sonuc?status=success&orderId=${data.order_id}&method=bank_transfer`);
       }
     } catch (err) {
       setError(err.response?.data?.detail || 'Ödeme başlatılırken bir hata oluştu.');
@@ -429,30 +438,86 @@ const CheckoutPage = () => {
               )}
             </div>
 
-            {/* iyzico Payment */}
+            {/* iyzico / Bank Transfer Payment */}
             <div className={sectionCls}>
               <h2 className="text-sm font-bold text-white uppercase tracking-wider mb-4 flex items-center gap-2">
                 <CreditCard size={16} className="text-orange-500" />
                 Ödeme Yöntemi
               </h2>
-              <div className="bg-[#0d0d0d] border border-[#2a2a2a] rounded-xl p-4 flex items-center gap-4">
-                <div className="flex items-center justify-center w-12 h-12 bg-[#1a1a1a] rounded-xl border border-[#333] flex-shrink-0">
-                  <Lock size={20} className="text-orange-500" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-white text-sm font-bold">iyzico Güvenli Ödeme</p>
-                  <p className="text-neutral-500 text-xs mt-0.5">Visa, MasterCard, Troy — 3D Secure korumalı</p>
-                </div>
-                <div className="flex gap-1 flex-shrink-0">
-                  {['VISA','MC','TR'].map(b => (
-                    <span key={b} className="text-[9px] font-black text-neutral-500 border border-[#333] rounded px-1 py-0.5">{b}</span>
-                  ))}
-                </div>
+              
+              <div className="grid grid-cols-2 gap-3 mb-5">
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('iyzico')}
+                  className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${paymentMethod === 'iyzico' ? 'border-orange-500/50 bg-orange-500/8 text-white' : 'border-[#2a2a2a] bg-[#0d0d0d] text-neutral-500 hover:border-[#333]'}`}
+                >
+                  <Lock size={18} className={paymentMethod === 'iyzico' ? 'text-orange-400' : ''} />
+                  <div className="text-left">
+                    <p className="text-xs font-bold leading-tight">Kredi/Banka Kartı</p>
+                    <p className="text-[10px] text-neutral-600 mt-0.5">iyzico Güvencesiyle</p>
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('havale')}
+                  className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${paymentMethod === 'havale' ? 'border-orange-500/50 bg-orange-500/8 text-white' : 'border-[#2a2a2a] bg-[#0d0d0d] text-neutral-500 hover:border-[#333]'}`}
+                >
+                  <Building size={18} className={paymentMethod === 'havale' ? 'text-orange-400' : ''} />
+                  <div className="text-left">
+                    <p className="text-xs font-bold leading-tight">Havale / EFT</p>
+                    <p className="text-[10px] text-neutral-600 mt-0.5">%0 Komisyon</p>
+                  </div>
+                </button>
               </div>
-              <div className="mt-3 flex items-center gap-2 text-xs text-neutral-600">
-                <Lock size={10} className="text-green-500" />
-                <span>SSL şifreli • 256-bit güvenlik • iyzico altyapısı</span>
-              </div>
+
+              {paymentMethod === 'iyzico' && (
+                <>
+                  <div className="bg-[#0d0d0d] border border-[#2a2a2a] rounded-xl p-4 flex items-center gap-4">
+                    <div className="flex items-center justify-center w-12 h-12 bg-[#1a1a1a] rounded-xl border border-[#333] flex-shrink-0">
+                      <Lock size={20} className="text-orange-500" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-white text-sm font-bold">iyzico Güvenli Ödeme</p>
+                      <p className="text-neutral-500 text-xs mt-0.5">Visa, MasterCard, Troy — 3D Secure korumalı</p>
+                    </div>
+                    <div className="flex gap-1 flex-shrink-0">
+                      {['VISA','MC','TR'].map(b => (
+                        <span key={b} className="text-[9px] font-black text-neutral-500 border border-[#333] rounded px-1 py-0.5">{b}</span>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="mt-3 flex items-center gap-2 text-xs text-neutral-600">
+                    <Lock size={10} className="text-green-500" />
+                    <span>SSL şifreli • 256-bit güvenlik • iyzico altyapısı</span>
+                  </div>
+                </>
+              )}
+
+              {paymentMethod === 'havale' && (
+                <div className="bg-[#0d0d0d] border border-[#2a2a2a] rounded-xl p-4">
+                  <p className="text-sm font-bold text-white mb-3">Havale Yapılabilecek Bankalar</p>
+                  <div className="space-y-3">
+                    {banks.length > 0 ? banks.map(b => (
+                      <div key={b.id} className="bg-[#111] border border-[#2a2a2a] rounded-lg p-3">
+                        <div className="flex justify-between items-start mb-1">
+                          <p className="text-orange-400 font-bold text-sm">{b.bank_name}</p>
+                          <p className="text-xs text-neutral-500">{b.branch_name}</p>
+                        </div>
+                        <p className="text-white text-xs mb-1">{b.account_holder}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="text-neutral-400 font-mono text-xs bg-[#1a1a1a] px-2 py-1 rounded select-all">{b.iban}</p>
+                        </div>
+                      </div>
+                    )) : (
+                      <p className="text-xs text-neutral-500">Banka bilgisi bulunamadı.</p>
+                    )}
+                  </div>
+                  <div className="mt-3 text-xs text-neutral-500 bg-orange-500/10 border border-orange-500/20 p-3 rounded-lg">
+                    <p className="font-semibold text-orange-400 mb-1">Önemli Not:</p>
+                    Siparişi tamamladıktan sonra tutarı yukarıdaki hesaplardan birine havale ediniz. Açıklama kısmına <span className="text-white">Sipariş Numaranızı</span> yazmayı unutmayınız. Ödemeniz onaylandıktan sonra siparişiniz işleme alınacaktır.
+                  </div>
+                </div>
+              )}
             </div>
 
             {error && (
@@ -468,9 +533,9 @@ const CheckoutPage = () => {
               className="w-full flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 disabled:bg-neutral-700 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl transition-all active:scale-95 text-sm uppercase tracking-wider"
             >
               {loading ? (
-                <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />iyzico'ya Yönlendiriliyor...</>
+                <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />İşleniyor...</>
               ) : (
-                <><Lock size={16} />iyzico ile Güvenli Öde</>
+                <><Lock size={16} />{paymentMethod === 'iyzico' ? 'iyzico ile Güvenli Öde' : 'Siparişi Tamamla'}</>
               )}
             </button>
           </form>

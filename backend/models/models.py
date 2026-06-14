@@ -54,6 +54,7 @@ class Order(Base):
     shipping_address: Mapped[Optional[str]]    = mapped_column(Text)
     shipping_city:    Mapped[Optional[str]]    = mapped_column(String(100))
     status:           Mapped[str]              = mapped_column(String(50), default="pending")
+    payment_method:   Mapped[str]              = mapped_column(String(50), default="iyzico")
     payment_status:   Mapped[str]              = mapped_column(String(50), default="mock_paid")
     invoice:          Mapped[Optional[dict]]   = mapped_column(JSONB)
     coupon_code:      Mapped[Optional[str]]    = mapped_column(String(100))
@@ -117,3 +118,15 @@ class Coupon(Base):
     min_order:   Mapped[float]         = mapped_column(Numeric(10, 2), default=0)
     description: Mapped[Optional[str]] = mapped_column(Text)
     active:      Mapped[bool]          = mapped_column(Boolean, default=True)
+
+
+class BankAccount(Base):
+    __tablename__ = "bank_accounts"
+    id:             Mapped[uuid.UUID]     = mapped_column(PGUUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    bank_name:      Mapped[str]           = mapped_column(String(100), nullable=False)
+    account_holder: Mapped[str]           = mapped_column(String(255), nullable=False)
+    iban:           Mapped[str]           = mapped_column(String(50), nullable=False)
+    branch_name:    Mapped[Optional[str]] = mapped_column(String(100))
+    account_number: Mapped[Optional[str]] = mapped_column(String(50))
+    is_active:      Mapped[bool]          = mapped_column(Boolean, default=True)
+    created_at:     Mapped[datetime]      = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))

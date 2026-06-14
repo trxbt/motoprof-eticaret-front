@@ -3,7 +3,7 @@ from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 from database import AsyncSessionLocal
-from models.models import User, Product, Coupon
+from models.models import User, Product, Coupon, BankAccount
 from config import hash_password, ADMIN_EMAIL, ADMIN_PASS
 
 logger = logging.getLogger(__name__)
@@ -117,3 +117,25 @@ async def seed_coupons():
         except Exception as e:
             await session.rollback()
             logger.error(f"Kupon seeding sırasında hata: {e}")
+
+
+async def seed_banks():
+    async with AsyncSessionLocal() as session:
+        try:
+            count = await session.scalar(select(func.count(BankAccount.id)))
+            if count == 0:
+                session.add(BankAccount(
+                    bank_name="Garanti BBVA",
+                    account_holder="MotoProf Motorlu Araçlar A.Ş.",
+                    iban="TR12 0006 2000 0001 2345 6789 01",
+                    branch_name="Kadıköy Şubesi",
+                    account_number="12345678"
+                ))
+                await session.commit()
+                logger.info("Banka hesapları seeding tamamlandı")
+        except IntegrityError as e:
+            await session.rollback()
+            logger.warning(f"Banka seeding hatası: {e}")
+        except Exception as e:
+            await session.rollback()
+            logger.error(f"Banka seeding hatası: {e}")
