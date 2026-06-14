@@ -55,7 +55,7 @@ class Order(Base):
     shipping_city:    Mapped[Optional[str]]    = mapped_column(String(100))
     status:           Mapped[str]              = mapped_column(String(50), default="pending")
     payment_method:   Mapped[str]              = mapped_column(String(50), default="iyzico")
-    payment_status:   Mapped[str]              = mapped_column(String(50), default="mock_paid")
+    payment_status:   Mapped[str]              = mapped_column(String(50), default="pending")
     invoice:          Mapped[Optional[dict]]   = mapped_column(JSONB)
     coupon_code:      Mapped[Optional[str]]    = mapped_column(String(100))
     discount:         Mapped[Optional[float]]  = mapped_column(Numeric(10, 2))

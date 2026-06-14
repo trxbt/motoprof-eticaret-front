@@ -81,3 +81,12 @@ class AddressUpdate(BaseModel):
 class StockNotifyRequest(BaseModel):
     product_id: str
     email: str
+
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str

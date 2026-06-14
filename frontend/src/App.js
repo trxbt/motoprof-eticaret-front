@@ -17,6 +17,8 @@ import ProductDetailPage from './pages/ProductDetailPage';
 import CartPage from './pages/CartPage';
 import CheckoutPage from './pages/CheckoutPage';
 import AuthPage from './pages/AuthPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 import ProfilePage from './pages/ProfilePage';
 import WishlistPage from './pages/WishlistPage';
 import PaymentResultPage from './pages/PaymentResultPage';
@@ -44,6 +46,8 @@ function App() {
                 <Route path="/odeme" element={<CheckoutPage />} />
                 <Route path="/odeme-sonuc" element={<PaymentResultPage />} />
                 <Route path="/giris" element={<AuthPage />} />
+                <Route path="/sifremi-unuttum" element={<ForgotPasswordPage />} />
+                <Route path="/sifre-sifirla" element={<ResetPasswordPage />} />
                 <Route path="/favoriler" element={<WishlistPage />} />
                 <Route path="/profil" element={
                   <ProtectedRoute>

@@ -127,6 +127,9 @@ const AuthPage = () => {
                     {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
                   </button>
                 </div>
+                <div className="flex justify-end mt-2">
+                  <Link to="/sifremi-unuttum" className="text-[11px] font-semibold text-neutral-500 hover:text-orange-400 transition-colors">Şifreni mi unuttun?</Link>
+                </div>
               </div>
               <button type="submit" disabled={loading} data-testid={AUTH.submitBtn}
                 className="w-full bg-orange-500 hover:bg-orange-600 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl transition-all active:scale-[0.98] text-xs uppercase tracking-widest glow-orange-sm mt-2">

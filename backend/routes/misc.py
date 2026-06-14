@@ -1,16 +1,18 @@
 import re
-from fastapi import APIRouter, HTTPException, Depends, Response
+from fastapi import APIRouter, HTTPException, Depends, Response, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from database import get_db
 from models.models import StockNotification, Product
 from schemas.schemas import StockNotifyRequest
+from limiter import limiter
 
 router = APIRouter(tags=["misc"])
 
 
 @router.post("/stock-notify")
-async def stock_notify(data: StockNotifyRequest, session: AsyncSession = Depends(get_db)):
+@limiter.limit("3/minute")
+async def stock_notify(request: Request, data: StockNotifyRequest, session: AsyncSession = Depends(get_db)):
     if not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", data.email):
         raise HTTPException(status_code=422, detail="Geçerli bir e-posta adresi girin")
     existing = await session.scalar(

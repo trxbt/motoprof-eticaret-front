@@ -27,6 +27,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from limiter import limiter
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 app.include_router(auth_router,      prefix="/api")
 app.include_router(products_router,  prefix="/api")
 app.include_router(orders_router,    prefix="/api")
