@@ -30,8 +30,6 @@ services:
     restart: always
     environment:
       SERVICE_FQDN_FRONTEND: ${SERVICE_FQDN_FRONTEND}
-    ports:
-      - "80:80"
     expose:
       - "80"
     depends_on:
