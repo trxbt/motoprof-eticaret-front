@@ -19,6 +19,7 @@ services:
       FRONTEND_URL: ${SITE_URL}
     networks:
       - motoprof_net
+      - coolify
 
   # ── Frontend (React + Nginx) ──────────────────────────────────
   frontend:
