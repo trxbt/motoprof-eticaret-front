@@ -57,6 +57,7 @@ async def startup():
             # bank_accounts: eksik kolonlar ve NULL is_active düzeltmesi
             await conn.execute(text("ALTER TABLE bank_accounts ADD COLUMN IF NOT EXISTS branch_name VARCHAR(100)"))
             await conn.execute(text("ALTER TABLE bank_accounts ADD COLUMN IF NOT EXISTS account_number VARCHAR(50)"))
+            await conn.execute(text("ALTER TABLE bank_accounts ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT TRUE"))
             await conn.execute(text("UPDATE bank_accounts SET is_active = TRUE WHERE is_active IS NULL"))
             await conn.execute(text("CREATE INDEX IF NOT EXISTS idx_products_fts ON products USING GIN (to_tsvector('turkish', coalesce(name, '') || ' ' || coalesce(description, '') || ' ' || coalesce(brand, '') || ' ' || coalesce(category, '')))"))
 
