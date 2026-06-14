@@ -18,11 +18,7 @@ export const WishlistProvider = ({ children }) => {
     axios.get(`${API}/wishlist`, { withCredentials: true })
       .then(({ data }) => {
         setWishlist(prev => {
-          // Safe check: product_ids array varsa kullan, yoksa data'yı doğrudan array olarak oku
-          const productIds = Array.isArray(data?.product_ids) ? data.product_ids : 
-                            Array.isArray(data) ? data.map(item => item.product_id || item.id) :
-                            [];
-          const merged = [...new Set([...prev, ...productIds])];
+          const merged = [...new Set([...prev, ...data.product_ids])];
           localStorage.setItem('motoprof_wishlist', JSON.stringify(merged));
           return merged;
         });
