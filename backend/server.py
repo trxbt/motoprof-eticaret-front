@@ -43,6 +43,8 @@ async def startup():
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
             await conn.execute(text("ALTER TABLE orders ADD COLUMN IF NOT EXISTS iyzico_token VARCHAR(500)"))
+            await conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS cart_data JSONB DEFAULT '[]'::jsonb"))
+            await conn.execute(text("CREATE INDEX IF NOT EXISTS idx_products_fts ON products USING GIN (to_tsvector('turkish', coalesce(name, '') || ' ' || coalesce(description, '') || ' ' || coalesce(brand, '') || ' ' || coalesce(category, '')))"))
     except Exception as e:
         logger.warning(f"DB init warning (tablolar mevcut olabilir): {e}")
     await seed_admin()

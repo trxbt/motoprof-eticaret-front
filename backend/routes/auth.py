@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from database import get_db
 from models.models import User
-from schemas.schemas import RegisterRequest, LoginRequest
+from schemas.schemas import RegisterRequest, LoginRequest, CartSyncRequest
 from config import hash_password, verify_password, create_token, JWT_EXP_DAYS
 from serializers import user_to_dict
 from deps import get_current_user
@@ -44,3 +44,10 @@ async def logout(response: Response):
 @router.get("/me")
 async def get_me(user: User = Depends(get_current_user)):
     return user_to_dict(user)
+
+
+@router.post("/cart")
+async def sync_cart(data: CartSyncRequest, user: User = Depends(get_current_user), session: AsyncSession = Depends(get_db)):
+    user.cart_data = data.cart_data
+    await session.commit()
+    return {"message": "Sepet güncellendi"}

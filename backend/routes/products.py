@@ -30,15 +30,14 @@ async def list_products(
     if featured is not None:
         stmt = stmt.where(Product.is_featured == featured)
     if search:
+        from sqlalchemy import text
+        # tsquery formati: kelime1:* & kelime2:*
         terms = [t.strip() for t in search.split() if t.strip()]
-        fields = [Product.name, Product.brand, Product.model, Product.category,
-                  Product.description, Product.sku, Product.oem_kodu]
-        if len(terms) == 1:
-            stmt = stmt.where(or_(*[f.ilike(f"%{terms[0]}%") for f in fields]))
-        else:
-            stmt = stmt.where(and_(*[
-                or_(*[f.ilike(f"%{term}%") for f in fields]) for term in terms
-            ]))
+        if terms:
+            search_query = " & ".join([f"{t}:*" for t in terms])
+            stmt = stmt.where(text(
+                "to_tsvector('turkish', coalesce(name, '') || ' ' || coalesce(description, '') || ' ' || coalesce(brand, '') || ' ' || coalesce(category, '')) @@ to_tsquery('turkish', :q)"
+            )).params(q=search_query)
     total = await session.scalar(select(func.count()).select_from(stmt.subquery()))
     products = await session.scalars(stmt.offset((page - 1) * limit).limit(limit))
     return {"products": [product_to_dict(p) for p in products.all()], "total": total, "page": page, "limit": limit}

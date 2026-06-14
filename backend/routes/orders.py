@@ -58,7 +58,7 @@ async def list_orders(user=Depends(get_current_user), session: AsyncSession = De
 
 
 @router.get("/{order_id}")
-async def get_order(order_id: str, session: AsyncSession = Depends(get_db)):
+async def get_order(order_id: str, request: Request, session: AsyncSession = Depends(get_db)):
     try:
         oid = uuid.UUID(order_id)
     except ValueError:
@@ -68,4 +68,10 @@ async def get_order(order_id: str, session: AsyncSession = Depends(get_db)):
     )
     if not order:
         raise HTTPException(status_code=404, detail="Sipariş bulunamadı")
+        
+    if order.user_id:
+        user = await get_optional_user(request, session)
+        if not user or user.id != order.user_id:
+            raise HTTPException(status_code=403, detail="Bu siparişe erişim izniniz yok")
+            
     return order_to_dict(order)

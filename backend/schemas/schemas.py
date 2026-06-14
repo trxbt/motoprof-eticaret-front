@@ -13,6 +13,10 @@ class LoginRequest(BaseModel):
     password: str
 
 
+class CartSyncRequest(BaseModel):
+    cart_data: list
+
+
 class OrderItemIn(BaseModel):
     product_id: str
     product_name: str

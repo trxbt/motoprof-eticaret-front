@@ -14,6 +14,7 @@ class User(Base):
     password_hash: Mapped[str]       = mapped_column(String(255), nullable=False)
     name:          Mapped[str]       = mapped_column(String(255), nullable=False)
     role:          Mapped[str]       = mapped_column(String(50), default="user")
+    cart_data:     Mapped[Optional[list]] = mapped_column(JSONB, default=list)
     created_at:    Mapped[datetime]  = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     orders:    Mapped[List["Order"]]    = relationship(back_populates="user")
     wishlist:  Mapped[List["Wishlist"]] = relationship(back_populates="user", cascade="all, delete-orphan")

@@ -4,7 +4,7 @@ from models.models import User, Product, Order, Address
 def user_to_dict(u: User) -> dict:
     return {
         "id": str(u.id), "email": u.email, "name": u.name,
-        "role": u.role, "created_at": u.created_at.isoformat(),
+        "role": u.role, "cart_data": u.cart_data if u.cart_data else [], "created_at": u.created_at.isoformat(),
     }
 
 

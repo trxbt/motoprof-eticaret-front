@@ -12,16 +12,17 @@ export const WishlistProvider = ({ children }) => {
     catch { return []; }
   });
 
-  // Kullanıcı giriş yapınca DB ile merge et
   useEffect(() => {
     if (!user) return;
     axios.get(`${API}/wishlist`, { withCredentials: true })
       .then(({ data }) => {
-        setWishlist(prev => {
-          const merged = [...new Set([...prev, ...data.product_ids])];
-          localStorage.setItem('motoprof_wishlist', JSON.stringify(merged));
-          return merged;
-        });
+        if (data && Array.isArray(data.product_ids)) {
+          setWishlist(prev => {
+            const merged = [...new Set([...prev, ...data.product_ids])];
+            localStorage.setItem('motoprof_wishlist', JSON.stringify(merged));
+            return merged;
+          });
+        }
       })
       .catch(() => {});
   }, [user]);

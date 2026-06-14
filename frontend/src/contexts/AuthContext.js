@@ -11,7 +11,11 @@ export const AuthProvider = ({ children }) => {
   const checkAuth = useCallback(async () => {
     try {
       const { data } = await axios.get(`${API}/auth/me`, { withCredentials: true });
-      setUser(data);
+      if (data && data.id) {
+        setUser(data);
+      } else {
+        setUser(null);
+      }
     } catch {
       setUser(null);
     } finally {
