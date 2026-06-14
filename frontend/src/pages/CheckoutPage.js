@@ -198,7 +198,7 @@ const CheckoutPage = () => {
                         <p className="text-sm text-white">{sel.name} — {sel.city}</p>
                         <p className="text-xs text-neutral-500 truncate max-w-xs">{sel.address}</p>
                       </div>
-                      <button onClick={() => setShowAddrPicker(v => !v)}
+                      <button type="button" onClick={() => setShowAddrPicker(v => !v)}
                         className="text-xs text-orange-400 hover:text-orange-300 font-semibold flex items-center gap-1 ml-3 flex-shrink-0">
                         Değiştir <ChevronRight size={13} />
                       </button>
@@ -210,7 +210,7 @@ const CheckoutPage = () => {
                 {showAddrPicker && (
                   <div className="space-y-2 mt-2">
                     {savedAddresses.map(addr => (
-                      <button key={addr.id} onClick={() => applyAddress(addr)}
+                      <button type="button" key={addr.id} onClick={() => applyAddress(addr)}
                         className={`w-full text-left flex items-center justify-between bg-[#0d0d0d] border rounded-xl px-4 py-3 transition-colors hover:border-orange-500/40 ${addr.id === selectedAddrId ? 'border-orange-500/40' : 'border-[#2a2a2a]'}`}>
                         <div>
                           <p className="text-xs font-bold text-neutral-400">{addr.title}</p>
@@ -220,6 +220,18 @@ const CheckoutPage = () => {
                         {addr.id === selectedAddrId && <div className="w-4 h-4 bg-orange-500 rounded-full flex-shrink-0 ml-3" />}
                       </button>
                     ))}
+                    <button type="button" onClick={() => {
+                        setSelectedAddrId(null);
+                        setForm({ shipping_name: user?.name || '', shipping_phone: '', shipping_address: '', shipping_city: '' });
+                        setShowAddrPicker(false);
+                      }}
+                      className={`w-full text-left flex items-center justify-between bg-[#0d0d0d] border rounded-xl px-4 py-3 transition-colors hover:border-orange-500/40 ${!selectedAddrId ? 'border-orange-500/40' : 'border-[#2a2a2a]'}`}>
+                      <div>
+                        <p className="text-sm font-bold text-white">Farklı bir adres gir</p>
+                        <p className="text-xs text-neutral-500 mt-0.5">Teslimatı manuel doldur</p>
+                      </div>
+                      {!selectedAddrId && <div className="w-4 h-4 bg-orange-500 rounded-full flex-shrink-0 ml-3" />}
+                    </button>
                     <Link to="/profil" onClick={() => { document.querySelector('#profil-tab-addresses')?.click(); }}
                       className="flex items-center gap-1.5 text-xs text-neutral-500 hover:text-orange-400 transition-colors pt-1 px-1">
                       <Plus size={12} /> Yeni adres ekle
@@ -228,7 +240,7 @@ const CheckoutPage = () => {
                 )}
 
                 {!selectedAddrId && (
-                  <button onClick={() => setShowAddrPicker(v => !v)}
+                  <button type="button" onClick={() => setShowAddrPicker(v => !v)}
                     className="w-full flex items-center justify-between bg-[#0d0d0d] border border-[#2a2a2a] hover:border-orange-500/30 rounded-xl px-4 py-3 transition-colors text-sm text-neutral-400">
                     <span>Bir adres seçin</span>
                     <ChevronDown size={15} />
@@ -252,35 +264,37 @@ const CheckoutPage = () => {
                 </div>
               </div>
             )}
-            <div className={sectionCls}>
-              <h2 className="text-sm font-bold text-white uppercase tracking-wider mb-4 flex items-center gap-2">
-                <Package size={16} className="text-orange-500" />
-                Teslimat Bilgileri
-              </h2>
-              <div className="space-y-3">
-                <div>
-                  <label className={labelCls}>Ad Soyad *</label>
-                  <input type="text" name="shipping_name" value={form.shipping_name} onChange={handleChange}
-                    placeholder="Adınız ve soyadınız" data-testid={CHECKOUT.nameInput} className={inputCls} />
-                </div>
-                <div>
-                  <label className={labelCls}>Telefon *</label>
-                  <input type="tel" name="shipping_phone" value={form.shipping_phone} onChange={handleChange}
-                    placeholder="0(5XX) XXX XX XX" data-testid={CHECKOUT.phoneInput} className={inputCls} />
-                </div>
-                <div>
-                  <label className={labelCls}>Adres *</label>
-                  <textarea name="shipping_address" value={form.shipping_address} onChange={handleChange}
-                    placeholder="Mahalle, sokak, bina no, daire no" rows={3}
-                    data-testid={CHECKOUT.addressInput} className={`${inputCls} resize-none`} />
-                </div>
-                <div>
-                  <label className={labelCls}>Şehir *</label>
-                  <input type="text" name="shipping_city" value={form.shipping_city} onChange={handleChange}
-                    placeholder="İstanbul" data-testid={CHECKOUT.cityInput} className={inputCls} />
+            {!selectedAddrId && (
+              <div className={sectionCls}>
+                <h2 className="text-sm font-bold text-white uppercase tracking-wider mb-4 flex items-center gap-2">
+                  <Package size={16} className="text-orange-500" />
+                  Teslimat Bilgileri
+                </h2>
+                <div className="space-y-3">
+                  <div>
+                    <label className={labelCls}>Ad Soyad *</label>
+                    <input type="text" name="shipping_name" value={form.shipping_name} onChange={handleChange}
+                      placeholder="Adınız ve soyadınız" data-testid={CHECKOUT.nameInput} className={inputCls} />
+                  </div>
+                  <div>
+                    <label className={labelCls}>Telefon *</label>
+                    <input type="tel" name="shipping_phone" value={form.shipping_phone} onChange={handleChange}
+                      placeholder="0(5XX) XXX XX XX" data-testid={CHECKOUT.phoneInput} className={inputCls} />
+                  </div>
+                  <div>
+                    <label className={labelCls}>Adres *</label>
+                    <textarea name="shipping_address" value={form.shipping_address} onChange={handleChange}
+                      placeholder="Mahalle, sokak, bina no, daire no" rows={3}
+                      data-testid={CHECKOUT.addressInput} className={`${inputCls} resize-none`} />
+                  </div>
+                  <div>
+                    <label className={labelCls}>Şehir *</label>
+                    <input type="text" name="shipping_city" value={form.shipping_city} onChange={handleChange}
+                      placeholder="İstanbul" data-testid={CHECKOUT.cityInput} className={inputCls} />
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
 
             {/* ── FATURA BİLGİLERİ ── */}
             <div className={`${sectionCls} overflow-hidden`}>
@@ -503,7 +517,7 @@ const CheckoutPage = () => {
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-green-400 font-bold">-{coupon.discount.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺</span>
-                    <button onClick={() => { setCoupon(null); setCouponCode(''); }} className="text-neutral-600 hover:text-red-400 transition-colors">
+                    <button type="button" onClick={() => { setCoupon(null); setCouponCode(''); }} className="text-neutral-600 hover:text-red-400 transition-colors">
                       <X size={12} />
                     </button>
                   </div>
@@ -517,7 +531,7 @@ const CheckoutPage = () => {
                       placeholder="Kupon kodu" data-testid="coupon-input"
                       className="flex-1 bg-[#0a0a0a] border border-[#2a2a2a] text-white placeholder-neutral-700 rounded-xl py-2 px-3 text-xs focus:outline-none focus:border-orange-500 transition-colors"
                     />
-                    <button onClick={applyCoupon} disabled={couponLoading || !couponCode.trim()} data-testid="coupon-apply-btn"
+                    <button type="button" onClick={applyCoupon} disabled={couponLoading || !couponCode.trim()} data-testid="coupon-apply-btn"
                       className="bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold px-3 py-2 rounded-xl transition-all disabled:opacity-50 whitespace-nowrap">
                       {couponLoading ? '...' : 'Uygula'}
                     </button>
