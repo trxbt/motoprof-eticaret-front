@@ -29,7 +29,7 @@ services:
       context: ./frontend
       args:
         REACT_APP_BACKEND_URL: ${SITE_URL}
-        BUILD_TIMESTAMP: ${BUILD_TIMESTAMP:-dev}
+        BUILD_TIMESTAMP: ${BUILD_TIMESTAMP:-default}
     restart: always
     environment:
       SERVICE_FQDN_FRONTEND: ${SERVICE_FQDN_FRONTEND}
