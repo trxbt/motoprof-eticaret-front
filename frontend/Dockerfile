@@ -51,8 +51,11 @@ RUN find /usr/share/nginx/html -type f -exec chmod 644 {} \; && \
 
 EXPOSE 80
 
+# Install curl for health checks (wget not available in alpine)
+RUN apk add --no-cache curl
+
 # Health check with proper timing for Nginx startup
 HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
-    CMD wget -q --spider http://localhost/ || exit 1
+    CMD curl -f http://localhost/ > /dev/null || exit 1
 
 CMD ["nginx", "-g", "daemon off;"]
