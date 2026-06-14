@@ -1,6 +1,7 @@
 import logging
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import IntegrityError
 from database import AsyncSessionLocal
 from models.models import User, Product, Coupon
 from config import hash_password, ADMIN_EMAIL, ADMIN_PASS
@@ -53,39 +54,66 @@ DEMO_PRODUCTS = [
 
 async def seed_admin():
     async with AsyncSessionLocal() as session:
-        existing = await session.scalar(select(User).where(User.email == ADMIN_EMAIL))
-        if not existing:
-            session.add(User(email=ADMIN_EMAIL, name="Admin", role="admin", password_hash=hash_password(ADMIN_PASS)))
-            await session.commit()
-            logger.info(f"Admin kullanıcı oluşturuldu: {ADMIN_EMAIL}")
+        try:
+            existing = await session.scalar(select(User).where(User.email == ADMIN_EMAIL))
+            if not existing:
+                session.add(User(email=ADMIN_EMAIL, name="Admin", role="admin", password_hash=hash_password(ADMIN_PASS)))
+                await session.commit()
+                logger.info(f"Admin kullanıcı oluşturuldu: {ADMIN_EMAIL}")
+        except IntegrityError as e:
+            await session.rollback()
+            if "users_email_key" in str(e):
+                logger.info(f"Admin kullanıcı zaten mevcut: {ADMIN_EMAIL}")
+            else:
+                logger.error(f"Beklenmeyen IntegrityError: {e}")
+        except Exception as e:
+            await session.rollback()
+            logger.error(f"Admin seeding sırasında hata: {e}")
+            raise
 
 
 async def seed_products():
     async with AsyncSessionLocal() as session:
-        count = await session.scalar(select(func.count(Product.id)))
-        if count > 0:
-            return
-        for p in DEMO_PRODUCTS:
-            main = p.get("image", "")
-            extras = [img for img in GALLERY_POOL if img != main][:2]
-            images = [main] + extras if main else extras
-            session.add(Product(
-                name=p["name"], slug=p["slug"], description=p.get("description"),
-                price=p["price"], original_price=p.get("original_price"),
-                image=p.get("image"), images=images,
-                brand=p.get("brand"), model=p.get("model"), model_id=p.get("model_id"),
-                year_range=p.get("year_range", ""), category=p.get("category"),
-                stock=p.get("stock", 0), sku=p.get("sku"), oem_kodu=p.get("oem_kodu"),
-                is_featured=p.get("is_featured", False),
-            ))
-        await session.commit()
-        logger.info(f"{len(DEMO_PRODUCTS)} demo ürün eklendi")
+        try:
+            count = await session.scalar(select(func.count(Product.id)))
+            if count > 0:
+                logger.info("Ürünler zaten mevcut, seeding atlanıyor")
+                return
+            for p in DEMO_PRODUCTS:
+                main = p.get("image", "")
+                extras = [img for img in GALLERY_POOL if img != main][:2]
+                images = [main] + extras if main else extras
+                session.add(Product(
+                    name=p["name"], slug=p["slug"], description=p.get("description"),
+                    price=p["price"], original_price=p.get("original_price"),
+                    image=p.get("image"), images=images,
+                    brand=p.get("brand"), model=p.get("model"), model_id=p.get("model_id"),
+                    year_range=p.get("year_range", ""), category=p.get("category"),
+                    stock=p.get("stock", 0), sku=p.get("sku"), oem_kodu=p.get("oem_kodu"),
+                    is_featured=p.get("is_featured", False),
+                ))
+            await session.commit()
+            logger.info(f"{len(DEMO_PRODUCTS)} demo ürün eklendi")
+        except IntegrityError as e:
+            await session.rollback()
+            logger.warning(f"Ürün seeding sırasında uniqueness ihlali (çalışan başka instance?): {e}")
+        except Exception as e:
+            await session.rollback()
+            logger.error(f"Ürün seeding sırasında hata: {e}")
 
 
 async def seed_coupons():
     async with AsyncSessionLocal() as session:
-        for c in DEMO_COUPONS:
-            existing = await session.scalar(select(Coupon).where(Coupon.code == c["code"]))
-            if not existing:
-                session.add(Coupon(**c))
-        await session.commit()
+        try:
+            for c in DEMO_COUPONS:
+                existing = await session.scalar(select(Coupon).where(Coupon.code == c["code"]))
+                if not existing:
+                    session.add(Coupon(**c))
+            await session.commit()
+            logger.info("Kuponlar seeding tamamlandı")
+        except IntegrityError as e:
+            await session.rollback()
+            logger.warning(f"Kupon seeding sırasında uniqueness ihlali (çalışan başka instance?): {e}")
+        except Exception as e:
+            await session.rollback()
+            logger.error(f"Kupon seeding sırasında hata: {e}")
