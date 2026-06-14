@@ -108,6 +108,19 @@ class Address(Base):
     created_at: Mapped[datetime]      = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     user: Mapped["User"] = relationship(back_populates="addresses")
 
+class Category(Base):
+    __tablename__ = "categories"
+    id:   Mapped[uuid.UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name: Mapped[str]       = mapped_column(String(200), nullable=False)
+    slug: Mapped[str]       = mapped_column(String(200), unique=True, nullable=False)
+
+
+class Brand(Base):
+    __tablename__ = "brands"
+    id:   Mapped[uuid.UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name: Mapped[str]       = mapped_column(String(200), nullable=False)
+    slug: Mapped[str]       = mapped_column(String(200), unique=True, nullable=False)
+
 
 class Coupon(Base):
     __tablename__ = "coupons"
