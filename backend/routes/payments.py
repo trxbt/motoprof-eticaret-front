@@ -61,35 +61,89 @@ async def initialize_iyzico(
     request: Request,
     session: AsyncSession = Depends(get_db),
 ):
+    from models.models import Product, Coupon
     user = await get_optional_user(request, session)
     if not user and not data.guest_email:
         raise HTTPException(status_code=400, detail="Misafir alışverişi için e-posta gerekli")
+
+    # 1. Fetch real products to validate prices
+    product_ids = [item.product_id for item in data.items if item.product_id]
+    products_db = await session.scalars(select(Product).where(Product.id.in_(product_ids)))
+    product_map = {str(p.id): p for p in products_db}
+
+    calculated_items_total = 0.0
+    valid_items = []
+    basket_items = []
+
+    for item in data.items:
+        real_product = product_map.get(str(item.product_id))
+        if not real_product:
+            raise HTTPException(status_code=400, detail=f"Geçersiz ürün: {item.product_name}")
+        
+        real_price = float(real_product.price)
+        line_total = real_price * item.quantity
+        calculated_items_total += line_total
+
+        valid_items.append({
+            "product_id": real_product.id,
+            "product_name": real_product.name,
+            "product_image": real_product.image,
+            "price": real_price,
+            "quantity": item.quantity
+        })
+
+        basket_items.append({
+            "id":        str(real_product.id),
+            "name":      (real_product.name or "Ürün")[:100],
+            "category1": "Motosiklet Yedek Parça",
+            "itemType":  "PHYSICAL",
+            "price":     f"{round(line_total, 2):.2f}",
+        })
+
+    calculated_items_total = round(calculated_items_total, 2)
+    
+    # 2. Coupon Validation
+    final_discount = 0.0
+    if data.coupon_code:
+        coupon = await session.scalar(select(Coupon).where(Coupon.code == data.coupon_code, Coupon.active == True))
+        if coupon and calculated_items_total >= coupon.min_order:
+            if coupon.type == "percent":
+                final_discount = (calculated_items_total * coupon.value) / 100.0
+            elif coupon.type == "fixed":
+                final_discount = float(coupon.value)
+    
+    final_discount = round(final_discount, 2)
+    
+    # 3. Final Total Calculation
+    calculated_paid_price = round(calculated_items_total - final_discount, 2)
+    if calculated_paid_price < 0.1: # Iyzico requires paidPrice > 0
+        calculated_paid_price = 0.1
 
     # Create order with pending payment_status
     order = Order(
         user_id=user.id if user else None,
         guest_email=data.guest_email if not user else None,
-        total=data.total,
+        total=calculated_paid_price,
         shipping_name=data.shipping_name,
         shipping_phone=data.shipping_phone,
         shipping_address=data.shipping_address,
         shipping_city=data.shipping_city,
         invoice=data.invoice.model_dump() if data.invoice else None,
-        coupon_code=data.coupon_code,
-        discount=data.discount,
+        coupon_code=data.coupon_code if final_discount > 0 else None,
+        discount=final_discount,
         payment_status="pending",
     )
     session.add(order)
     await session.flush()
 
-    for item in data.items:
+    for item in valid_items:
         session.add(OrderItem(
             order_id=order.id,
-            product_id=item.product_id,
-            product_name=item.product_name,
-            product_image=item.product_image,
-            price=item.price,
-            quantity=item.quantity,
+            product_id=item["product_id"],
+            product_name=item["product_name"],
+            product_image=item["product_image"],
+            price=item["price"],
+            quantity=item["quantity"],
         ))
     await session.flush()
 
@@ -99,21 +153,8 @@ async def initialize_iyzico(
     fname, lname = _split_name(data.shipping_name)
     client_ip = request.headers.get("X-Forwarded-For", request.client.host if request.client else "127.0.0.1").split(",")[0].strip()
 
-    # Price = sum of basket items (before discount); paidPrice = final total
-    items_total = round(sum(item.price * item.quantity for item in data.items), 2)
-    paid_price  = round(float(data.total), 2)
-
-    # Basket items – each item line price = unit_price * qty
-    basket_items = [
-        {
-            "id":        item.product_id or str(uuid.uuid4()),
-            "name":      (item.product_name or "Ürün")[:100],
-            "category1": "Motosiklet Yedek Parça",
-            "itemType":  "PHYSICAL",
-            "price":     f"{round(item.price * item.quantity, 2):.2f}",
-        }
-        for item in data.items
-    ]
+    items_total = calculated_items_total
+    paid_price  = calculated_paid_price
 
     iyzico_request = {
         "locale":         "tr",
