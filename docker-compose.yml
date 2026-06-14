@@ -2,32 +2,13 @@ version: '3.8'
 
 services:
 
-  # ── PostgreSQL ────────────────────────────────────────────────
-  postgres:
-    image: postgres:16-alpine
-    restart: always
-    environment:
-      POSTGRES_DB: motoprof
-      POSTGRES_USER: motoprof
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - motoprof_net
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U motoprof -d motoprof"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 20s
-
   # ── Backend (FastAPI + SQLAlchemy) ────────────────────────────
   backend:
     build:
       context: ./backend
     restart: always
     environment:
-      DATABASE_URL: postgresql+asyncpg://motoprof:${POSTGRES_PASSWORD}@postgres:5432/motoprof
+      DATABASE_URL: ${DATABASE_URL}
       JWT_SECRET: ${JWT_SECRET}
       ADMIN_EMAIL: ${ADMIN_EMAIL}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
@@ -36,9 +17,6 @@ services:
       IYZICO_SECRET_KEY: ${IYZICO_SECRET_KEY}
       IYZICO_BASE_URL: ${IYZICO_BASE_URL}
       FRONTEND_URL: ${SITE_URL}
-    depends_on:
-      postgres:
-        condition: service_healthy
     networks:
       - motoprof_net
 
@@ -59,7 +37,3 @@ services:
 networks:
   motoprof_net:
     driver: bridge
-
-volumes:
-  postgres_data:
-    driver: local
