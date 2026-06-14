@@ -28,11 +28,10 @@ services:
       args:
         REACT_APP_BACKEND_URL: ${SITE_URL}
     restart: always
+    environment:
+      SERVICE_FQDN_FRONTEND: ${SERVICE_FQDN_FRONTEND}
     expose:
       - "80"
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.services.frontend.loadbalancer.server.port=80"
     depends_on:
       - backend
     networks:
