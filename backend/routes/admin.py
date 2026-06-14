@@ -10,7 +10,7 @@ import os
 from database import get_db
 from models.models import User, Order, OrderItem, Product, Coupon
 from deps import get_admin_user
-from schemas.schemas import OrderResponse
+from serializers import order_to_dict
 
 router = APIRouter()
 
@@ -46,7 +46,7 @@ async def get_dashboard_stats(
         "total_users": total_users
     }
 
-@router.get("/orders", response_model=List[OrderResponse])
+@router.get("/orders")
 async def get_all_orders(
     admin_user: User = Depends(get_admin_user),
     session: AsyncSession = Depends(get_db)
@@ -57,7 +57,7 @@ async def get_all_orders(
         .options(selectinload(Order.items).selectinload(OrderItem.product))
         .order_by(Order.created_at.desc())
     )
-    return result.scalars().all()
+    return [order_to_dict(o) for o in result.scalars().all()]
 
 @router.patch("/orders/{order_id}/status")
 async def update_order_status(
