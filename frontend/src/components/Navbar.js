@@ -221,8 +221,8 @@ const Navbar = () => {
                   </button>
                   <div className="absolute top-full right-0 mt-2 bg-[#111111] border border-white/8 rounded-xl p-2 min-w-44 shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
                     <div className="px-3 py-2 border-b border-white/5 mb-1">
-                      <p className="text-xs font-semibold text-white">{user?.name || user?.email || 'Kullanıcı'}</p>
-                      <p className="text-[10px] text-neutral-600 truncate">{user?.email || 'email@example.com'}</p>
+                      <p className="text-xs font-semibold text-white">{user.name}</p>
+                      <p className="text-[10px] text-neutral-600 truncate">{user.email}</p>
                     </div>
                     <Link to="/profil" className="flex items-center gap-2 px-3 py-2 text-xs text-neutral-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
                       <User size={13} /> Profilim
@@ -420,11 +420,11 @@ const Navbar = () => {
               {user ? (
                 <div className="flex items-center gap-3 bg-[#111] border border-[#222] rounded-2xl p-3.5">
                   <div className="w-10 h-10 bg-orange-500/15 border border-orange-500/25 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-base font-black text-orange-400">{(user?.name || user?.email || 'U')[0]?.toUpperCase()}</span>
+                    <span className="text-base font-black text-orange-400">{user.name[0].toUpperCase()}</span>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-white truncate">{user?.name || user?.email || 'Kullanıcı'}</p>
-                    <p className="text-xs text-neutral-500 truncate">{user?.email}</p>
+                    <p className="text-sm font-bold text-white truncate">{user.name}</p>
+                    <p className="text-xs text-neutral-500 truncate">{user.email}</p>
                   </div>
                   <Link to="/profil" onClick={closeMenu}
                     className="text-xs font-bold text-orange-400 border border-orange-500/25 px-3 py-1.5 rounded-lg hover:bg-orange-500/10 transition-colors flex-shrink-0">
