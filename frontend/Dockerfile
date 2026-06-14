@@ -22,6 +22,10 @@ RUN echo "Build timestamp: $BUILD_TIMESTAMP" && \
 # ── Aşama 2: Nginx ile serv et ──────────────────────────────────
 FROM nginx:1.25-alpine
 
+# Invalidate cache on every build - prevents stale artifacts
+ARG BUILD_TIMESTAMP=unknown
+RUN echo "Nginx stage - timestamp: $BUILD_TIMESTAMP"
+
 # Build artifact'ını kopyala - force invalidation
 COPY --from=builder /app/build /usr/share/nginx/html/
 
@@ -47,7 +51,8 @@ RUN find /usr/share/nginx/html -type f -exec chmod 644 {} \; && \
 
 EXPOSE 80
 
-HEALTHCHECK --interval=30s --timeout=5s \
-    CMD wget -q --spider http://localhost || exit 1
+# Health check with proper timing for Nginx startup
+HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
+    CMD wget -q --spider http://localhost/ || exit 1
 
 CMD ["nginx", "-g", "daemon off;"]
