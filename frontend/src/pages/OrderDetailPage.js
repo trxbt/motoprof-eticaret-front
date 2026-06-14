@@ -164,8 +164,21 @@ const OrderDetailPage = () => {
         <div className={sectionCls}>
           <h2 className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-3">Fatura Bilgileri</h2>
           <p className="text-xs text-neutral-400 capitalize">{order.invoice.type === 'bireysel' ? 'Bireysel Fatura' : 'Kurumsal Fatura'}</p>
-          {order.invoice.company_name && <p className="text-sm text-white mt-1">{order.invoice.company_name}</p>}
-          {order.invoice.tax_number   && <p className="text-xs text-neutral-400 mt-0.5">VKN: {order.invoice.tax_number}</p>}
+          
+          {order.invoice.type === 'bireysel' ? (
+            <>
+              {order.invoice.name && <p className="text-sm text-white mt-1">{order.invoice.name}</p>}
+              {order.invoice.tc_no && <p className="text-xs text-neutral-400 mt-0.5">TC: {order.invoice.tc_no}</p>}
+            </>
+          ) : (
+            <>
+              {order.invoice.company && <p className="text-sm text-white mt-1">{order.invoice.company}</p>}
+              {order.invoice.tax_office && <p className="text-xs text-neutral-400 mt-0.5">VD: {order.invoice.tax_office}</p>}
+              {order.invoice.tax_no && <p className="text-xs text-neutral-400 mt-0.5">VKN: {order.invoice.tax_no}</p>}
+            </>
+          )}
+          {order.invoice.email && <p className="text-xs text-neutral-400 mt-0.5">{order.invoice.email}</p>}
+          {order.invoice.address && <p className="text-xs text-neutral-400 mt-0.5">{order.invoice.address}</p>}
         </div>
       )}
 

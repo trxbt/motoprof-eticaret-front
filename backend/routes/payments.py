@@ -67,8 +67,15 @@ async def initialize_iyzico(
         raise HTTPException(status_code=400, detail="Misafir alışverişi için e-posta gerekli")
 
     # 1. Fetch real products to validate prices
-    product_ids = [item.product_id for item in data.items if item.product_id]
-    products_db = await session.scalars(select(Product).where(Product.id.in_(product_ids)))
+    product_ids = []
+    for item in data.items:
+        if item.product_id:
+            try:
+                product_ids.append(uuid.UUID(item.product_id))
+            except ValueError:
+                pass
+                
+    products_db = await session.scalars(select(Product).where(Product.id.in_(product_ids))) if product_ids else []
     product_map = {str(p.id): p for p in products_db}
 
     calculated_items_total = 0.0

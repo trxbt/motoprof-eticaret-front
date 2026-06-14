@@ -27,10 +27,13 @@ class OrderItemIn(BaseModel):
 
 class InvoiceInfo(BaseModel):
     type: Optional[str] = None
-    company_name: Optional[str] = None
-    tax_number: Optional[str] = None
-    tax_office: Optional[str] = None
+    name: Optional[str] = None
+    tc_no: Optional[str] = None
+    email: Optional[str] = None
     address: Optional[str] = None
+    company: Optional[str] = None
+    tax_office: Optional[str] = None
+    tax_no: Optional[str] = None
 
 
 class OrderCreate(BaseModel):
