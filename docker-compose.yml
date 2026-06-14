@@ -36,10 +36,13 @@ services:
       - backend
     networks:
       - motoprof_net
-      - coolify
+      - coolify-ingress
 
 networks:
   motoprof_net:
     driver: bridge
   coolify:
+    external: true
+  coolify-ingress:
+    name: ${COOLIFY_RESOURCE_UUID}
     external: true
