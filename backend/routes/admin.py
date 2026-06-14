@@ -156,7 +156,7 @@ async def get_alerts(
     )).scalar() or 0
 
     stock_notifications = (await session.execute(
-        select(func.count()).select_from(__import__('models.models', fromlist=['StockNotification']).StockNotification)
+        select(func.count(StockNotification.id))
     )).scalar() or 0
 
     return {
@@ -192,7 +192,10 @@ async def get_chart_data(
     """Son N gün günlük sipariş sayısı ve ciro"""
     from datetime import datetime, timezone, timedelta
     from sqlalchemy import text as sql_text
-    days = min(days, 90)
+    days = min(max(days, 1), 90)
+    # INTERVAL içinde bind param PostgreSQL'de çalışmaz; Python tarafında hesapla
+    cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+    cutoff_str = cutoff.strftime("%Y-%m-%d %H:%M:%S")
     result = await session.execute(
         sql_text("""
             SELECT
@@ -200,10 +203,10 @@ async def get_chart_data(
                 COUNT(*) as order_count,
                 COALESCE(SUM(CASE WHEN payment_status = 'paid' THEN total ELSE 0 END), 0) as revenue
             FROM orders
-            WHERE created_at >= NOW() - INTERVAL ':days days'
+            WHERE created_at >= :cutoff
             GROUP BY day
             ORDER BY day ASC
-        """).bindparams(days=days)
+        """).bindparams(cutoff=cutoff_str)
     )
     rows = result.fetchall()
     return [
