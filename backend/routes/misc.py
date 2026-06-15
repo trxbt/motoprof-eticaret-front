@@ -3,11 +3,56 @@ from fastapi import APIRouter, HTTPException, Depends, Response, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from database import get_db
-from models.models import StockNotification, Product
+from models.models import StockNotification, Product, BankAccount, Slider, MotorcycleModel
 from schemas.schemas import StockNotifyRequest
 from limiter import limiter
 
 router = APIRouter(tags=["misc"])
+
+
+@router.get("/sliders")
+async def get_sliders(session: AsyncSession = Depends(get_db)):
+    """Ana sayfa slider verilerini döndür — aktif, sıralı"""
+    result = await session.scalars(
+        select(Slider).where(Slider.active == True).order_by(Slider.display_order.asc())
+    )
+    sliders = result.all()
+    return [
+        {
+            "id": str(s.id),
+            "title": s.title,
+            "subtitle": s.subtitle,
+            "image": s.image,
+            "link": s.link or "/urunler",
+            "button_text": s.button_text or "İncele",
+            "display_order": s.display_order,
+        }
+        for s in sliders
+    ]
+
+
+@router.get("/motorcycle-models")
+async def get_motorcycle_models(
+    brand: str = None,
+    session: AsyncSession = Depends(get_db)
+):
+    """Motosiklet modellerini döndür — opsiyonel marka filtresi"""
+    q = select(MotorcycleModel).order_by(MotorcycleModel.brand, MotorcycleModel.name)
+    if brand:
+        q = q.where(MotorcycleModel.brand == brand.upper())
+    result = await session.scalars(q)
+    models = result.all()
+    return [
+        {
+            "id": str(m.id),
+            "name": m.name,
+            "slug": m.slug,
+            "brand": m.brand,
+            "year_range": m.year_range,
+            "image": m.image,
+        }
+        for m in models
+    ]
 
 
 @router.post("/stock-notify")

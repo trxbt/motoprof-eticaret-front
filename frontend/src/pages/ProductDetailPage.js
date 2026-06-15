@@ -74,7 +74,27 @@ const ProductDetailPage = () => {
     try {
       const { data } = await axios.get(`${API}/products/${slug}`);
       setProduct(data);
-      document.title = `${data.name} - MotoProf`;
+      // SEO — meta_title/meta_description DB'den, yoksa fallback
+      const seoTitle = data.meta_title || `${data.name} - MotoProf`;
+      const seoDesc  = data.meta_description || `${data.name} - ${data.brand || ''} ${data.model || ''} için orijinal yedek parça. MotoProf garantisiyle hızlı kargo.`;
+      document.title = seoTitle;
+      // Meta description
+      let metaDesc = document.querySelector('meta[name="description"]');
+      if (!metaDesc) { metaDesc = document.createElement('meta'); metaDesc.name = 'description'; document.head.appendChild(metaDesc); }
+      metaDesc.content = seoDesc;
+      // Open Graph
+      let ogTitle = document.querySelector('meta[property="og:title"]');
+      if (!ogTitle) { ogTitle = document.createElement('meta'); ogTitle.setAttribute('property', 'og:title'); document.head.appendChild(ogTitle); }
+      ogTitle.content = seoTitle;
+      let ogDesc = document.querySelector('meta[property="og:description"]');
+      if (!ogDesc) { ogDesc = document.createElement('meta'); ogDesc.setAttribute('property', 'og:description'); document.head.appendChild(ogDesc); }
+      ogDesc.content = seoDesc;
+      if (data.image) {
+        let ogImg = document.querySelector('meta[property="og:image"]');
+        if (!ogImg) { ogImg = document.createElement('meta'); ogImg.setAttribute('property', 'og:image'); document.head.appendChild(ogImg); }
+        ogImg.content = data.image;
+      }
+
       const rel = await axios.get(`${API}/products?model_id=${data.model_id}&limit=4`);
       setRelatedProducts((rel.data.products || []).filter(p => p.slug !== slug));
     } catch (err) {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Package, LogOut, MapPin, Plus, Pencil, Trash2, Star, ChevronRight, Clock, X, Check } from 'lucide-react';
+import { User, Package, LogOut, MapPin, Plus, Pencil, Trash2, Star, ChevronRight, Clock, X, Check, Truck } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from 'sonner';
 import axios from 'axios';
@@ -15,10 +15,11 @@ const STATUS_MAP = {
 };
 
 const PAYMENT_MAP = {
-  paid:      { label: 'Ödendi',    color: 'text-green-400' },
-  pending:   { label: 'Bekliyor',  color: 'text-yellow-400' },
-  failed:    { label: 'Başarısız', color: 'text-red-400' },
-  mock_paid: { label: 'Ödendi',    color: 'text-green-400' },
+  paid:             { label: 'Ödendi',      color: 'text-green-400' },
+  pending:          { label: 'Bekliyor',    color: 'text-yellow-400' },
+  pending_transfer: { label: 'EFT Bekliyor', color: 'text-orange-400' },
+  failed:           { label: 'Başarısız',   color: 'text-red-400' },
+  mock_paid:        { label: 'Ödendi',      color: 'text-green-400' },
 };
 
 const inputCls = 'w-full bg-[#0d0d0d] border border-[#2a2a2a] rounded-xl px-3.5 py-2.5 text-white text-sm placeholder-neutral-700 focus:outline-none focus:border-orange-500 transition-colors';
@@ -275,6 +276,23 @@ const ProfilePage = () => {
                         <span className="text-xs text-neutral-500 flex items-center px-1">+{order.items.length - 3}</span>
                       )}
                     </div>
+
+                    {/* Tracking number */}
+                    {order.tracking_number && (
+                      <div className="mt-3 flex items-center gap-2 bg-purple-500/10 border border-purple-500/20 rounded-xl px-3 py-2">
+                        <Truck size={13} className="text-purple-400 flex-shrink-0" />
+                        <span className="text-xs text-purple-300 font-semibold">Kargo Takip No:</span>
+                        <a
+                          href={`https://gonderitakip.ptt.gov.tr/Track/Verify?q=${order.tracking_number}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs font-mono text-purple-400 hover:text-purple-300 underline underline-offset-2 transition-colors"
+                        >
+                          {order.tracking_number}
+                        </a>
+                        <span className="text-[10px] text-neutral-600 ml-auto">PTT Kargo</span>
+                      </div>
+                    )}
 
                     {/* Detail link */}
                     <div className="mt-3 pt-3 border-t border-[#1f1f1f] flex justify-end">

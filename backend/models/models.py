@@ -40,6 +40,8 @@ class Product(Base):
     sku:            Mapped[Optional[str]] = mapped_column(String(200))
     oem_kodu:       Mapped[Optional[str]] = mapped_column(String(200))
     is_featured:    Mapped[bool]          = mapped_column(Boolean, default=False)
+    meta_title:     Mapped[Optional[str]] = mapped_column(String(500))
+    meta_description: Mapped[Optional[str]] = mapped_column(String(1000))
     created_at:     Mapped[datetime]      = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
 
@@ -60,7 +62,11 @@ class Order(Base):
     coupon_code:      Mapped[Optional[str]]    = mapped_column(String(100))
     discount:         Mapped[Optional[float]]  = mapped_column(Numeric(10, 2))
     iyzico_token:     Mapped[Optional[str]]    = mapped_column(String(500))
-    created_at:       Mapped[datetime]         = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    tracking_number: Mapped[Optional[str]]    = mapped_column(String(200))
+    admin_note:      Mapped[Optional[str]]    = mapped_column(Text)
+    error_code:      Mapped[Optional[str]]    = mapped_column(String(200))
+    error_message:   Mapped[Optional[str]]    = mapped_column(Text)
+    created_at:      Mapped[datetime]         = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     user:  Mapped[Optional["User"]]  = relationship(back_populates="orders")
     items: Mapped[List["OrderItem"]] = relationship(back_populates="order", cascade="all, delete-orphan")
 
@@ -143,3 +149,52 @@ class BankAccount(Base):
     account_number: Mapped[Optional[str]] = mapped_column(String(50))
     is_active:      Mapped[bool]          = mapped_column(Boolean, default=True)
     created_at:     Mapped[datetime]      = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+
+class Slider(Base):
+    __tablename__ = "sliders"
+    id:            Mapped[uuid.UUID]     = mapped_column(PGUUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    title:         Mapped[Optional[str]] = mapped_column(String(255))
+    subtitle:      Mapped[Optional[str]] = mapped_column(String(500))
+    image:         Mapped[str]           = mapped_column(String(1000), nullable=False)
+    link:          Mapped[Optional[str]] = mapped_column(String(500))
+    button_text:   Mapped[Optional[str]] = mapped_column(String(100), default="İncele")
+    display_order: Mapped[int]           = mapped_column(Integer, default=0)
+    active:        Mapped[bool]          = mapped_column(Boolean, default=True)
+    created_at:    Mapped[datetime]      = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+
+class MotorcycleModel(Base):
+    __tablename__ = "motorcycle_models"
+    id:         Mapped[uuid.UUID]     = mapped_column(PGUUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name:       Mapped[str]           = mapped_column(String(200), nullable=False)
+    slug:       Mapped[str]           = mapped_column(String(200), nullable=False)
+    brand:      Mapped[str]           = mapped_column(String(100), nullable=False)
+    year_range: Mapped[Optional[str]] = mapped_column(String(100))
+    image:      Mapped[Optional[str]] = mapped_column(String(1000))
+    created_at: Mapped[datetime]      = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+
+class Invoice(Base):
+    __tablename__ = "invoices"
+    id:               Mapped[uuid.UUID]     = mapped_column(PGUUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    order_id:         Mapped[Optional[uuid.UUID]] = mapped_column(PGUUID(as_uuid=True), ForeignKey("orders.id"), nullable=True)
+    invoice_no:       Mapped[str]           = mapped_column(String(100), nullable=False)
+    invoice_date:     Mapped[Optional[str]] = mapped_column(String(20))
+    recipient_name:   Mapped[str]           = mapped_column(String(255), nullable=False)
+    recipient_tax_id: Mapped[Optional[str]] = mapped_column(String(50))
+    recipient_address:Mapped[Optional[str]] = mapped_column(Text)
+    recipient_city:   Mapped[Optional[str]] = mapped_column(String(100))
+    recipient_phone:  Mapped[Optional[str]] = mapped_column(String(50))
+    recipient_email:  Mapped[Optional[str]] = mapped_column(String(255))
+    lines:            Mapped[Optional[list]] = mapped_column(JSONB, default=list)
+    subtotal:         Mapped[float]         = mapped_column(Numeric(10, 2), nullable=False)
+    vat_rate:         Mapped[Optional[float]] = mapped_column(Numeric(5, 2), default=20.0)
+    vat_amount:       Mapped[float]         = mapped_column(Numeric(10, 2), nullable=False)
+    total:            Mapped[float]         = mapped_column(Numeric(10, 2), nullable=False)
+    notes:            Mapped[Optional[str]] = mapped_column(Text)
+    status:           Mapped[Optional[str]] = mapped_column(String(50), default="draft")
+    gib_uuid:         Mapped[Optional[str]] = mapped_column(String(200))
+    pdf_url:          Mapped[Optional[str]] = mapped_column(String(1000))
+    created_at:       Mapped[datetime]      = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
