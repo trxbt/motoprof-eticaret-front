@@ -20,8 +20,10 @@ services:
       IYZICO_BASE_URL: ${IYZICO_BASE_URL}
       FRONTEND_URL: ${SITE_URL}
     networks:
-      - motoprof_net
-      - coolify
+      motoprof_net:
+        aliases:
+          - motoprof-api
+      coolify:
     labels:
       - "coolify.managed=true"
 
