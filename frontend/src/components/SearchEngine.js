@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, ChevronDown, ArrowRight, Zap } from 'lucide-react';
-import { BRANDS } from '../constants/categories';
+import { useBrands } from '../contexts/BrandsContext';
 
 const SearchEngine = () => {
   const navigate = useNavigate();
+  const { brands: BRANDS } = useBrands();
   const [selectedBrand, setSelectedBrand] = useState('');
   const [selectedModel, setSelectedModel] = useState('');
 

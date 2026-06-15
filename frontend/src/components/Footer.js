@@ -1,9 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Phone, Mail, MapPin, Instagram, Youtube, Facebook, ArrowRight, Shield, Lock } from 'lucide-react';
-import { BRANDS } from '../constants/categories';
+import { useBrands } from '../contexts/BrandsContext';
 
 const Footer = () => {
+  const { brands: BRANDS } = useBrands();
   return (
     <footer className="bg-[#050505] border-t border-white/5 mt-16">
       {/* Top CTA strip */}

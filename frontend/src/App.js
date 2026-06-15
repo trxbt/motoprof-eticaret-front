@@ -4,6 +4,7 @@ import { HelmetProvider } from 'react-helmet-async';
 import { AuthProvider } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
 import { WishlistProvider } from './contexts/WishlistContext';
+import { BrandsProvider } from './contexts/BrandsContext';
 import { Toaster } from './components/ui/sonner';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -32,6 +33,7 @@ function App() {
       <AuthProvider>
         <CartProvider>
           <WishlistProvider>
+          <BrandsProvider>
           <CustomCursor />
           <div className="min-h-screen bg-[#0a0a0a] text-white">
             <Navbar />
@@ -66,6 +68,7 @@ function App() {
           <WhatsAppButton />
           <PWAInstallBanner />
           <Toaster richColors position="top-right" closeButton />
+          </BrandsProvider>
           </WishlistProvider>
         </CartProvider>
       </AuthProvider>

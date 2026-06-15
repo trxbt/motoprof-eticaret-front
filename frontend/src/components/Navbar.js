@@ -8,7 +8,7 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
-import { BRANDS } from '../constants/categories';
+import { useBrands } from '../contexts/BrandsContext';
 import { NAVBAR } from '../constants/testIds';
 import axios from 'axios';
 
@@ -27,6 +27,7 @@ const Navbar = () => {
   const { user, logout } = useAuth();
   const { itemCount } = useCart();
   const { count: wishlistCount } = useWishlist();
+  const { brands: BRANDS } = useBrands();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);

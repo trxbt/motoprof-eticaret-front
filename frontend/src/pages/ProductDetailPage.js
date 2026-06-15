@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
-import { getBrandBySlug } from '../constants/categories';
+import { useBrands } from '../contexts/BrandsContext';
 import ProductCard from '../components/ProductCard';
 import RecentlyViewed, { trackRecentlyViewed } from '../components/RecentlyViewed';
 import { toast } from 'sonner';
@@ -20,6 +20,7 @@ const ProductDetailPage = () => {
   const { slug } = useParams();
   const { addItem } = useCart();
   const { toggle, isWishlisted } = useWishlist();
+  const { getBrandBySlug } = useBrands();
   const [product, setProduct] = useState(null);
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [loading, setLoading] = useState(true);

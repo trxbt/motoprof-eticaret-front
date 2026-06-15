@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { ChevronRight, SlidersHorizontal, X, Search } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
-import { BRANDS, PARTS_CATEGORIES, getBrandBySlug, getModelBySlug } from '../constants/categories';
+import { useBrands } from '../contexts/BrandsContext';
 import axios from 'axios';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -12,6 +12,8 @@ const CategoryPage = () => {
   const [searchParams] = useSearchParams();
   const searchQuery = searchParams.get('search') || '';
   const categoryFilter = searchParams.get('category') || '';
+
+  const { brands: BRANDS, getBrandBySlug, getModelBySlug, PARTS_CATEGORIES } = useBrands();
 
   const brandData = brandSlug ? getBrandBySlug(brandSlug) : null;
   const modelData = modelSlug ? getModelBySlug(brandSlug, modelSlug) : null;

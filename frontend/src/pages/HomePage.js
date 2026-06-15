@@ -4,7 +4,7 @@ import { ArrowRight, Wrench, Shield, Truck, RotateCcw, Star } from 'lucide-react
 import HeroSlider from '../components/HeroSlider';
 import SearchEngine from '../components/SearchEngine';
 import ProductCard from '../components/ProductCard';
-import { BRANDS } from '../constants/categories';
+import { useBrands } from '../contexts/BrandsContext';
 import axios from 'axios';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -27,6 +27,7 @@ const SectionHeader = ({ label, title, action }) => (
 );
 
 const HomePage = () => {
+  const { brands: BRANDS } = useBrands();
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
