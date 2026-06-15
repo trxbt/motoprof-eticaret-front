@@ -93,12 +93,19 @@ const Footer = () => {
           <div>
             <h3 className="text-[10px] font-black uppercase tracking-[0.25em] text-neutral-600 mb-5">Müşteri Hizmetleri</h3>
             <ul className="space-y-2.5">
-              {['Hakkımızda', 'SSS', 'İade Politikası', 'Kargo Bilgisi', 'Gizlilik Politikası', 'KVKK'].map(item => (
-                <li key={item}>
-                  <a href="#" className="group flex items-center gap-1.5 text-xs text-neutral-500 hover:text-white transition-colors">
+              {[
+                { label: 'Hakkımızda', to: '/hakkimizda' },
+                { label: 'SSS', to: '/sss' },
+                { label: 'İade Politikası', to: '/iade-politikasi' },
+                { label: 'Kargo Bilgisi', to: '/kargo-bilgisi' },
+                { label: 'Gizlilik Politikası', to: '/gizlilik-politikasi' },
+                { label: 'KVKK', to: '/kvkk' },
+              ].map(({ label, to }) => (
+                <li key={label}>
+                  <Link to={to} className="group flex items-center gap-1.5 text-xs text-neutral-500 hover:text-white transition-colors">
                     <ArrowRight size={10} className="text-neutral-700 group-hover:text-orange-500 transition-colors" />
-                    {item}
-                  </a>
+                    {label}
+                  </Link>
                 </li>
               ))}
             </ul>

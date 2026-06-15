@@ -25,6 +25,13 @@ import ProfilePage from './pages/ProfilePage';
 import WishlistPage from './pages/WishlistPage';
 import PaymentResultPage from './pages/PaymentResultPage';
 import OrderDetailPage from './pages/OrderDetailPage';
+import HakkimizdaPage from './pages/HakkimizdaPage';
+import SSSPage from './pages/SSSPage';
+import IadePolitikasiPage from './pages/IadePolitikasiPage';
+import KargoBilgisiPage from './pages/KargoBilgisiPage';
+import GizlilikPolitikasiPage from './pages/GizlilikPolitikasiPage';
+import KVKKPage from './pages/KVKKPage';
+import CookieBanner from './components/CookieBanner';
 import './App.css';
 
 function App() {
@@ -63,12 +70,19 @@ function App() {
                     <OrderDetailPage />
                   </ProtectedRoute>
                 } />
+                <Route path="/hakkimizda" element={<HakkimizdaPage />} />
+                <Route path="/sss" element={<SSSPage />} />
+                <Route path="/iade-politikasi" element={<IadePolitikasiPage />} />
+                <Route path="/kargo-bilgisi" element={<KargoBilgisiPage />} />
+                <Route path="/gizlilik-politikasi" element={<GizlilikPolitikasiPage />} />
+                <Route path="/kvkk" element={<KVKKPage />} />
               </Routes>
             </main>
             <Footer />
           </div>
           <WhatsAppButton />
           <PWAInstallBanner />
+          <CookieBanner />
           <Toaster richColors position="top-right" closeButton />
           </SettingsProvider>
           </BrandsProvider>
