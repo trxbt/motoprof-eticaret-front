@@ -2,9 +2,11 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Phone, Mail, MapPin, Instagram, Youtube, Facebook, ArrowRight, Shield, Lock } from 'lucide-react';
 import { useBrands } from '../contexts/BrandsContext';
+import { useSettings } from '../contexts/SettingsContext';
 
 const Footer = () => {
   const { brands: BRANDS } = useBrands();
+  const { settings } = useSettings();
   return (
     <footer className="bg-[#050505] border-t border-white/5 mt-16">
       {/* Top CTA strip */}
@@ -34,13 +36,19 @@ const Footer = () => {
           {/* Brand column */}
           <div className="lg:col-span-1">
             <Link to="/" className="inline-flex items-center gap-2.5 mb-5 group">
-              <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center group-hover:bg-orange-400 transition-colors">
-                <span className="text-white font-black text-xs font-chivo">MP</span>
-              </div>
-              <span className="font-chivo font-black text-xl">
-                <span className="text-orange-400">MOTO</span>
-                <span className="text-white">PROF</span>
-              </span>
+              {settings.logo_url ? (
+                <img src={settings.logo_url} alt={settings.site_name || 'MotoProf'} className="h-10 object-contain" />
+              ) : (
+                <>
+                  <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center group-hover:bg-orange-400 transition-colors">
+                    <span className="text-white font-black text-xs font-chivo">MP</span>
+                  </div>
+                  <span className="font-chivo font-black text-xl">
+                    <span className="text-orange-400">MOTO</span>
+                    <span className="text-white">PROF</span>
+                  </span>
+                </>
+              )}
             </Link>
             <p className="text-neutral-600 text-xs leading-relaxed mb-6 max-w-[200px]">
               Türkiye'nin güvenilir motosiklet yedek parça platformu.

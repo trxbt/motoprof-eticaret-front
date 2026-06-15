@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useSettings } from '../contexts/SettingsContext';
 import { AUTH } from '../constants/testIds';
 import WelcomeDiscountModal from '../components/WelcomeDiscountModal';
 
@@ -20,6 +21,7 @@ const AuthPage = () => {
   const [showWelcome, setShowWelcome] = useState(false);
   const [newUserName, setNewUserName] = useState('');
   const { login, register } = useAuth();
+  const { settings } = useSettings();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const redirect = searchParams.get('redirect') || '/';
@@ -77,13 +79,19 @@ const AuthPage = () => {
         {/* Logo */}
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-3 group">
-            <div className="w-10 h-10 bg-orange-500 group-hover:bg-orange-400 rounded-xl flex items-center justify-center transition-colors">
-              <span className="text-white font-black text-sm font-chivo">MP</span>
-            </div>
-            <div>
-              <span className="text-orange-400 text-2xl font-black tracking-tighter font-chivo">MOTO</span>
-              <span className="text-white text-2xl font-black tracking-tighter font-chivo">PROF</span>
-            </div>
+            {settings.logo_url ? (
+              <img src={settings.logo_url} alt={settings.site_name || 'MotoProf'} className="h-12 object-contain" />
+            ) : (
+              <>
+                <div className="w-10 h-10 bg-orange-500 group-hover:bg-orange-400 rounded-xl flex items-center justify-center transition-colors">
+                  <span className="text-white font-black text-sm font-chivo">MP</span>
+                </div>
+                <div>
+                  <span className="text-orange-400 text-2xl font-black tracking-tighter font-chivo">MOTO</span>
+                  <span className="text-white text-2xl font-black tracking-tighter font-chivo">PROF</span>
+                </div>
+              </>
+            )}
           </Link>
           <p className="text-neutral-600 text-xs mt-3 uppercase tracking-widest">Motorcycle Spare Parts</p>
         </div>

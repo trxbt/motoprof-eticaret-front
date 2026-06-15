@@ -165,23 +165,17 @@ const Navbar = () => {
           <div className={`flex items-center justify-between transition-all duration-300 ${scrolled ? 'h-12' : 'h-16'}`}>
 
             {/* Logo */}
-            <Link to="/" data-testid={NAVBAR.logo} className="flex items-center gap-3 flex-shrink-0 group">
-              {settings.logo_url ? (
-                <img
-                  src={settings.logo_url}
-                  alt={settings.site_name || 'MotoProf'}
-                  className={`object-contain transition-all duration-300 ${scrolled ? 'h-9' : 'h-12'}`}
-                />
-              ) : (
-                <>
-                  <div className={`bg-orange-500 rounded-lg flex items-center justify-center group-hover:bg-orange-400 transition-all duration-300 ${scrolled ? 'w-7 h-7' : 'w-8 h-8'}`}>
-                    <span className={`text-white font-black font-chivo transition-all duration-300 ${scrolled ? 'text-[9px]' : 'text-xs'}`}>MP</span>
-                  </div>
-                  <div className="flex items-baseline gap-0.5">
-                    <span className={`text-orange-400 font-black tracking-tighter font-chivo transition-all duration-300 ${scrolled ? 'text-lg' : 'text-xl'}`}>MOTO</span>
-                    <span className={`text-white font-black tracking-tighter font-chivo transition-all duration-300 ${scrolled ? 'text-lg' : 'text-xl'}`}>PROF</span>
-                  </div>
-                </>
+            <Link to="/" data-testid={NAVBAR.logo} className="flex-shrink-0">
+              <img
+                src={settings.logo_url || ''}
+                alt={settings.site_name || 'MotoProf'}
+                className={`object-contain transition-all duration-300 ${scrolled ? 'h-9' : 'h-12'}`}
+                style={{ display: settings.logo_url ? 'block' : 'none' }}
+              />
+              {!settings.logo_url && (
+                <span className={`text-orange-400 font-black tracking-tighter font-chivo transition-all duration-300 ${scrolled ? 'text-lg' : 'text-xl'}`}>
+                  MOTO<span className="text-white">PROF</span>
+                </span>
               )}
             </Link>
 
