@@ -9,6 +9,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
 import { useBrands } from '../contexts/BrandsContext';
+import { useSettings } from '../contexts/SettingsContext';
 import { NAVBAR } from '../constants/testIds';
 import axios from 'axios';
 
@@ -28,6 +29,7 @@ const Navbar = () => {
   const { itemCount } = useCart();
   const { count: wishlistCount } = useWishlist();
   const { brands: BRANDS } = useBrands();
+  const { settings } = useSettings();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -164,13 +166,23 @@ const Navbar = () => {
 
             {/* Logo */}
             <Link to="/" data-testid={NAVBAR.logo} className="flex items-center gap-3 flex-shrink-0 group">
-              <div className={`bg-orange-500 rounded-lg flex items-center justify-center group-hover:bg-orange-400 transition-all duration-300 ${scrolled ? 'w-7 h-7' : 'w-8 h-8'}`}>
-                <span className={`text-white font-black font-chivo transition-all duration-300 ${scrolled ? 'text-[9px]' : 'text-xs'}`}>MP</span>
-              </div>
-              <div className="flex items-baseline gap-0.5">
-                <span className={`text-orange-400 font-black tracking-tighter font-chivo transition-all duration-300 ${scrolled ? 'text-lg' : 'text-xl'}`}>MOTO</span>
-                <span className={`text-white font-black tracking-tighter font-chivo transition-all duration-300 ${scrolled ? 'text-lg' : 'text-xl'}`}>PROF</span>
-              </div>
+              {settings.logo_url ? (
+                <img
+                  src={settings.logo_url}
+                  alt={settings.site_name || 'MotoProf'}
+                  className={`object-contain transition-all duration-300 ${scrolled ? 'h-7' : 'h-9'}`}
+                />
+              ) : (
+                <>
+                  <div className={`bg-orange-500 rounded-lg flex items-center justify-center group-hover:bg-orange-400 transition-all duration-300 ${scrolled ? 'w-7 h-7' : 'w-8 h-8'}`}>
+                    <span className={`text-white font-black font-chivo transition-all duration-300 ${scrolled ? 'text-[9px]' : 'text-xs'}`}>MP</span>
+                  </div>
+                  <div className="flex items-baseline gap-0.5">
+                    <span className={`text-orange-400 font-black tracking-tighter font-chivo transition-all duration-300 ${scrolled ? 'text-lg' : 'text-xl'}`}>MOTO</span>
+                    <span className={`text-white font-black tracking-tighter font-chivo transition-all duration-300 ${scrolled ? 'text-lg' : 'text-xl'}`}>PROF</span>
+                  </div>
+                </>
+              )}
             </Link>
 
             {/* Desktop Nav */}
@@ -428,12 +440,18 @@ const Navbar = () => {
           {/* Header */}
           <div className="flex items-center justify-between px-5 py-3 border-b border-[#1a1a1a] flex-shrink-0">
             <Link to="/" onClick={closeMenu} className="flex items-center gap-2.5">
-              <div className="w-8 h-8 bg-orange-500 rounded-xl flex items-center justify-center">
-                <span className="text-white font-black text-[10px] font-chivo">MP</span>
-              </div>
-              <span className="font-black text-lg font-chivo tracking-tight">
-                <span className="text-orange-400">MOTO</span><span className="text-white">PROF</span>
-              </span>
+              {settings.logo_url ? (
+                <img src={settings.logo_url} alt={settings.site_name || 'MotoProf'} className="h-8 object-contain" />
+              ) : (
+                <>
+                  <div className="w-8 h-8 bg-orange-500 rounded-xl flex items-center justify-center">
+                    <span className="text-white font-black text-[10px] font-chivo">MP</span>
+                  </div>
+                  <span className="font-black text-lg font-chivo tracking-tight">
+                    <span className="text-orange-400">MOTO</span><span className="text-white">PROF</span>
+                  </span>
+                </>
+              )}
             </Link>
             <button onClick={closeMenu}
               className="w-8 h-8 flex items-center justify-center text-neutral-500 hover:text-white bg-white/5 rounded-full transition-all">
