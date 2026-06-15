@@ -170,7 +170,7 @@ const Navbar = () => {
                 <img
                   src={settings.logo_url}
                   alt={settings.site_name || 'MotoProf'}
-                  className={`object-contain transition-all duration-300 ${scrolled ? 'h-7' : 'h-9'}`}
+                  className={`object-contain transition-all duration-300 ${scrolled ? 'h-9' : 'h-12'}`}
                 />
               ) : (
                 <>
