@@ -3,7 +3,7 @@ version: '3.8'
 services:
 
   # ── Backend (FastAPI + SQLAlchemy) ────────────────────────────
-  backend:
+  motoprof-api:
     build:
       context: ./backend
     restart: always
@@ -20,10 +20,8 @@ services:
       IYZICO_BASE_URL: ${IYZICO_BASE_URL}
       FRONTEND_URL: ${SITE_URL}
     networks:
-      motoprof_net:
-        aliases:
-          - motoprof-api
-      coolify:
+      - motoprof_net
+      - coolify
     labels:
       - "coolify.managed=true"
 
@@ -40,7 +38,7 @@ services:
     expose:
       - "80"
     depends_on:
-      - backend
+      - motoprof-api
     networks:
       - motoprof_net
       - coolify
