@@ -696,7 +696,13 @@ async def delete_category(
 @router.get("/brands")
 async def get_brands(session: AsyncSession = Depends(get_db)):
     result = await session.execute(select(Brand).order_by(Brand.name.asc()))
-    return [{"id": str(b.id), "name": b.name, "slug": b.slug, "image": b.image} for b in result.scalars().all()]
+    return [
+        {
+            "id": str(b.id), "name": b.name, "slug": b.slug, "image": b.image,
+            "seo_title": b.seo_title, "seo_description": b.seo_description, "seo_keywords": b.seo_keywords,
+        }
+        for b in result.scalars().all()
+    ]
 
 
 @router.post("/brands")

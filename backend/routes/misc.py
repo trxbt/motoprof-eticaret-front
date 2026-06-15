@@ -3,7 +3,7 @@ from fastapi import APIRouter, HTTPException, Depends, Response, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from database import get_db
-from models.models import StockNotification, Product, BankAccount, Slider, MotorcycleModel, SiteSettings
+from models.models import StockNotification, Product, BankAccount, Slider, MotorcycleModel, SiteSettings, Category
 from schemas.schemas import StockNotifyRequest
 from limiter import limiter
 
@@ -31,6 +31,20 @@ async def get_sliders(session: AsyncSession = Depends(get_db)):
     ]
 
 
+
+@router.get("/categories")
+async def get_categories(session: AsyncSession = Depends(get_db)):
+    """Public — tüm kategorileri SEO alanlarıyla döndür"""
+    result = await session.scalars(select(Category).order_by(Category.name))
+    return [
+        {
+            "id": str(c.id), "name": c.name, "slug": c.slug, "image": c.image,
+            "seo_title": c.seo_title, "seo_description": c.seo_description, "seo_keywords": c.seo_keywords,
+        }
+        for c in result.all()
+    ]
+
+
 @router.get("/motorcycle-models")
 async def get_motorcycle_models(
     brand: str = None,
@@ -50,6 +64,9 @@ async def get_motorcycle_models(
             "brand": m.brand,
             "year_range": m.year_range,
             "image": m.image,
+            "seo_title": m.seo_title,
+            "seo_description": m.seo_description,
+            "seo_keywords": m.seo_keywords,
         }
         for m in models
     ]

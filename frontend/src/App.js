@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { HelmetProvider } from 'react-helmet-async';
+import { Helmet, HelmetProvider } from 'react-helmet-async';
+import { useSettings } from './contexts/SettingsContext';
 import { AuthProvider } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
 import { WishlistProvider } from './contexts/WishlistContext';
@@ -35,6 +36,22 @@ import CookieBanner from './components/CookieBanner';
 import TrackingScripts from './components/TrackingScripts';
 import './App.css';
 
+// Global default meta — SettingsContext'ten beslenir, sayfa özel Helmet'leri override eder
+const GlobalHelmet = () => {
+  const { settings } = useSettings();
+  return (
+    <Helmet defaultTitle="MotoProf" titleTemplate="%s | MotoProf">
+      {settings.seo_title && <title>{settings.seo_title}</title>}
+      {settings.seo_description && <meta name="description" content={settings.seo_description} />}
+      {settings.seo_keywords && <meta name="keywords" content={settings.seo_keywords} />}
+      {settings.seo_canonical && <link rel="canonical" href={settings.seo_canonical} />}
+      {settings.seo_og_title && <meta property="og:title" content={settings.seo_og_title} />}
+      {settings.seo_og_description && <meta property="og:description" content={settings.seo_og_description} />}
+      {settings.seo_og_image && <meta property="og:image" content={settings.seo_og_image} />}
+    </Helmet>
+  );
+};
+
 function App() {
   return (
     <HelmetProvider>
@@ -44,6 +61,7 @@ function App() {
           <WishlistProvider>
           <BrandsProvider>
           <SettingsProvider>
+          <GlobalHelmet />
           <CustomCursor />
           <div className="min-h-screen bg-[#0a0a0a] text-white">
             <Navbar />

@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { ChevronRight, SlidersHorizontal, X, Search } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
 import { useBrands } from '../contexts/BrandsContext';
+import { useSettings } from '../contexts/SettingsContext';
 import axios from 'axios';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -13,10 +15,21 @@ const CategoryPage = () => {
   const searchQuery = searchParams.get('search') || '';
   const categoryFilter = searchParams.get('category') || '';
 
-  const { brands: BRANDS, getBrandBySlug, getModelBySlug, PARTS_CATEGORIES } = useBrands();
+  const { brands: BRANDS, getBrandBySlug, getModelBySlug, getCategoryBySlug, PARTS_CATEGORIES } = useBrands();
+  const { settings: siteSettings } = useSettings();
 
   const brandData = brandSlug ? getBrandBySlug(brandSlug) : null;
   const modelData = modelSlug ? getModelBySlug(brandSlug, modelSlug) : null;
+
+  // SEO — öncelik: model > marka > site geneli
+  const activeSeo = modelData || brandData || {};
+  const pageTitle = activeSeo.seo_title
+    || (modelData ? `${modelData.full_name} Yedek Parça | MotoProf` : null)
+    || (brandData ? `${brandData.name} Yedek Parça | MotoProf` : null)
+    || siteSettings.seo_title
+    || 'MotoProf';
+  const pageDesc = activeSeo.seo_description || siteSettings.seo_description || '';
+  const pageKeywords = activeSeo.seo_keywords || siteSettings.seo_keywords || '';
 
   const [products, setProducts] = useState([]);
   const [total, setTotal] = useState(0);
@@ -53,10 +66,7 @@ const CategoryPage = () => {
   }, [fetchProducts]);
 
   useEffect(() => {
-    let title = 'MotoProf - Tüm Ürünler';
-    if (modelData) title = `${modelData.full_name} Parçaları - MotoProf`;
-    else if (brandData) title = `${brandData.name} Parçaları - MotoProf`;
-    document.title = title;
+    // Helmet zaten yönetiyor, eski manual title kaldırıldı
   }, [brandData, modelData]);
 
   const handleCategorySelect = (cat) => {
@@ -138,6 +148,14 @@ const CategoryPage = () => {
 
   return (
     <div className="pt-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+      <Helmet>
+        <title>{pageTitle}</title>
+        {pageDesc && <meta name="description" content={pageDesc} />}
+        {pageKeywords && <meta name="keywords" content={pageKeywords} />}
+        {(modelData?.image || brandData?.image) && <meta property="og:image" content={modelData?.image || brandData?.image} />}
+        <meta property="og:title" content={pageTitle} />
+        {pageDesc && <meta property="og:description" content={pageDesc} />}
+      </Helmet>
       {/* Breadcrumb */}
       <nav className="flex items-center gap-1.5 mb-5 flex-wrap" data-testid="breadcrumb">
         {breadcrumbs.map((crumb, i) => (

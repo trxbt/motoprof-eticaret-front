@@ -116,17 +116,24 @@ class Address(Base):
 
 class Category(Base):
     __tablename__ = "categories"
-    id:   Mapped[uuid.UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    name: Mapped[str]       = mapped_column(String(200), nullable=False)
-    slug: Mapped[str]       = mapped_column(String(200), unique=True, nullable=False)
+    id:              Mapped[uuid.UUID]     = mapped_column(PGUUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name:            Mapped[str]           = mapped_column(String(200), nullable=False)
+    slug:            Mapped[str]           = mapped_column(String(200), unique=True, nullable=False)
+    image:           Mapped[Optional[str]] = mapped_column(String(1000), nullable=True)
+    seo_title:       Mapped[Optional[str]] = mapped_column(String(200))
+    seo_description: Mapped[Optional[str]] = mapped_column(Text)
+    seo_keywords:    Mapped[Optional[str]] = mapped_column(Text)
 
 
 class Brand(Base):
     __tablename__ = "brands"
-    id:    Mapped[uuid.UUID]     = mapped_column(PGUUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    name:  Mapped[str]           = mapped_column(String(200), nullable=False)
-    slug:  Mapped[str]           = mapped_column(String(200), unique=True, nullable=False)
-    image: Mapped[Optional[str]] = mapped_column(String(1000), nullable=True)
+    id:              Mapped[uuid.UUID]     = mapped_column(PGUUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name:            Mapped[str]           = mapped_column(String(200), nullable=False)
+    slug:            Mapped[str]           = mapped_column(String(200), unique=True, nullable=False)
+    image:           Mapped[Optional[str]] = mapped_column(String(1000), nullable=True)
+    seo_title:       Mapped[Optional[str]] = mapped_column(String(200))
+    seo_description: Mapped[Optional[str]] = mapped_column(Text)
+    seo_keywords:    Mapped[Optional[str]] = mapped_column(Text)
 
 
 class Coupon(Base):
@@ -167,13 +174,16 @@ class Slider(Base):
 
 class MotorcycleModel(Base):
     __tablename__ = "motorcycle_models"
-    id:         Mapped[uuid.UUID]     = mapped_column(PGUUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    name:       Mapped[str]           = mapped_column(String(200), nullable=False)
-    slug:       Mapped[str]           = mapped_column(String(200), nullable=False)
-    brand:      Mapped[str]           = mapped_column(String(100), nullable=False)
-    year_range: Mapped[Optional[str]] = mapped_column(String(100))
-    image:      Mapped[Optional[str]] = mapped_column(String(1000))
-    created_at: Mapped[datetime]      = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    id:              Mapped[uuid.UUID]     = mapped_column(PGUUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name:            Mapped[str]           = mapped_column(String(200), nullable=False)
+    slug:            Mapped[str]           = mapped_column(String(200), nullable=False)
+    brand:           Mapped[str]           = mapped_column(String(100), nullable=False)
+    year_range:      Mapped[Optional[str]] = mapped_column(String(100))
+    image:           Mapped[Optional[str]] = mapped_column(String(1000))
+    created_at:      Mapped[datetime]      = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    seo_title:       Mapped[Optional[str]] = mapped_column(String(200))
+    seo_description: Mapped[Optional[str]] = mapped_column(Text)
+    seo_keywords:    Mapped[Optional[str]] = mapped_column(Text)
 
 
 class SiteSettings(Base):

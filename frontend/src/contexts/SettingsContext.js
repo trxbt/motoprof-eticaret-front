@@ -43,11 +43,7 @@ export const SettingsProvider = ({ children }) => {
           }
           link.href = data.favicon_url;
         }
-
-        // Title güncelle
-        if (data.seo_title) {
-          document.title = data.seo_title;
-        }
+        // Title'ı Helmet yönetiyor, burada set etmiyoruz
       })
       .catch(() => {})
       .finally(() => setLoading(false));
