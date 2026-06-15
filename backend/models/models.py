@@ -176,6 +176,22 @@ class MotorcycleModel(Base):
     created_at: Mapped[datetime]      = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
 
+class SiteSettings(Base):
+    __tablename__ = "site_settings"
+    id:               Mapped[int]            = mapped_column(Integer, primary_key=True, default=1)
+    site_name:        Mapped[Optional[str]]  = mapped_column(String(200))
+    logo_url:         Mapped[Optional[str]]  = mapped_column(String(1000))
+    favicon_url:      Mapped[Optional[str]]  = mapped_column(String(1000))
+    seo_title:        Mapped[Optional[str]]  = mapped_column(String(200))
+    seo_description:  Mapped[Optional[str]]  = mapped_column(Text)
+    seo_keywords:     Mapped[Optional[str]]  = mapped_column(Text)
+    seo_og_title:     Mapped[Optional[str]]  = mapped_column(String(200))
+    seo_og_description: Mapped[Optional[str]] = mapped_column(Text)
+    seo_og_image:     Mapped[Optional[str]]  = mapped_column(String(1000))
+    seo_canonical:    Mapped[Optional[str]]  = mapped_column(String(500))
+    updated_at:       Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+
+
 class Invoice(Base):
     __tablename__ = "invoices"
     id:               Mapped[uuid.UUID]     = mapped_column(PGUUID(as_uuid=True), primary_key=True, default=uuid.uuid4)

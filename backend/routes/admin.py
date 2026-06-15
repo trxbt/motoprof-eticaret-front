@@ -8,7 +8,7 @@ from botocore.client import Config
 import os
 
 from database import get_db
-from models.models import User, Order, OrderItem, Product, Coupon, BankAccount, Category, Brand, StockNotification
+from models.models import User, Order, OrderItem, Product, Coupon, BankAccount, Category, Brand, StockNotification, SiteSettings
 from deps import get_admin_user
 from serializers import order_to_dict, product_to_dict, user_to_dict
 import csv
@@ -978,3 +978,80 @@ async def sync_categories_brands_from_products(
         "added_brands": added_brands
     }
 
+
+
+# ─── Site Ayarları ───────────────────────────────────────────────────────────
+
+@router.get("/settings")
+async def admin_get_settings(
+    admin_user: User = Depends(get_admin_user),
+    session: AsyncSession = Depends(get_db)
+):
+    """Admin: Tüm site ayarlarını getir"""
+    result = await session.execute(select(SiteSettings).where(SiteSettings.id == 1))
+    settings = result.scalar_one_or_none()
+    if not settings:
+        # İlk kaydı oluştur
+        settings = SiteSettings(id=1)
+        session.add(settings)
+        await session.commit()
+        await session.refresh(settings)
+    return {
+        "id": settings.id,
+        "site_name": settings.site_name,
+        "logo_url": settings.logo_url,
+        "favicon_url": settings.favicon_url,
+        "seo_title": settings.seo_title,
+        "seo_description": settings.seo_description,
+        "seo_keywords": settings.seo_keywords,
+        "seo_og_title": settings.seo_og_title,
+        "seo_og_description": settings.seo_og_description,
+        "seo_og_image": settings.seo_og_image,
+        "seo_canonical": settings.seo_canonical,
+        "updated_at": settings.updated_at.isoformat() if settings.updated_at else None,
+    }
+
+
+@router.patch("/settings")
+async def admin_update_settings(
+    request: Request,
+    admin_user: User = Depends(get_admin_user),
+    session: AsyncSession = Depends(get_db)
+):
+    """Admin: Site ayarlarını güncelle (PATCH — sadece gönderilen alanlar değişir)"""
+    data = await request.json()
+
+    result = await session.execute(select(SiteSettings).where(SiteSettings.id == 1))
+    settings = result.scalar_one_or_none()
+    if not settings:
+        settings = SiteSettings(id=1)
+        session.add(settings)
+
+    allowed = [
+        "site_name", "logo_url", "favicon_url",
+        "seo_title", "seo_description", "seo_keywords",
+        "seo_og_title", "seo_og_description", "seo_og_image", "seo_canonical",
+    ]
+    for field in allowed:
+        if field in data:
+            setattr(settings, field, data[field])
+
+    from datetime import datetime, timezone
+    settings.updated_at = datetime.now(timezone.utc)
+
+    await session.commit()
+    await session.refresh(settings)
+    return {
+        "message": "Ayarlar güncellendi",
+        "site_name": settings.site_name,
+        "logo_url": settings.logo_url,
+        "favicon_url": settings.favicon_url,
+        "seo_title": settings.seo_title,
+        "seo_description": settings.seo_description,
+        "seo_keywords": settings.seo_keywords,
+        "seo_og_title": settings.seo_og_title,
+        "seo_og_description": settings.seo_og_description,
+        "seo_og_image": settings.seo_og_image,
+        "seo_canonical": settings.seo_canonical,
+        "updated_at": settings.updated_at.isoformat() if settings.updated_at else None,
+    }
