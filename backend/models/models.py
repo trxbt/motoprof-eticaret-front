@@ -189,6 +189,15 @@ class SiteSettings(Base):
     seo_og_description: Mapped[Optional[str]] = mapped_column(Text)
     seo_og_image:     Mapped[Optional[str]]  = mapped_column(String(1000))
     seo_canonical:    Mapped[Optional[str]]  = mapped_column(String(500))
+    # Marketing / Tracking
+    gtm_id:              Mapped[Optional[str]] = mapped_column(String(50))
+    ga4_id:              Mapped[Optional[str]] = mapped_column(String(50))
+    gsc_verification:    Mapped[Optional[str]] = mapped_column(String(200))
+    yandex_verification: Mapped[Optional[str]] = mapped_column(String(200))
+    yandex_metrica_id:   Mapped[Optional[str]] = mapped_column(String(50))
+    facebook_pixel_id:   Mapped[Optional[str]] = mapped_column(String(50))
+    tiktok_pixel_id:     Mapped[Optional[str]] = mapped_column(String(50))
+    hotjar_id:           Mapped[Optional[str]] = mapped_column(String(50))
     updated_at:       Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
 

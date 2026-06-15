@@ -17,6 +17,14 @@ export const SettingsProvider = ({ children }) => {
     seo_og_description: null,
     seo_og_image: null,
     seo_canonical: null,
+    gtm_id: null,
+    ga4_id: null,
+    gsc_verification: null,
+    yandex_verification: null,
+    yandex_metrica_id: null,
+    facebook_pixel_id: null,
+    tiktok_pixel_id: null,
+    hotjar_id: null,
   });
   const [loading, setLoading] = useState(true);
 

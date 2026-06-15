@@ -1008,6 +1008,14 @@ async def admin_get_settings(
         "seo_og_description": settings.seo_og_description,
         "seo_og_image": settings.seo_og_image,
         "seo_canonical": settings.seo_canonical,
+        "gtm_id": settings.gtm_id,
+        "ga4_id": settings.ga4_id,
+        "gsc_verification": settings.gsc_verification,
+        "yandex_verification": settings.yandex_verification,
+        "yandex_metrica_id": settings.yandex_metrica_id,
+        "facebook_pixel_id": settings.facebook_pixel_id,
+        "tiktok_pixel_id": settings.tiktok_pixel_id,
+        "hotjar_id": settings.hotjar_id,
         "updated_at": settings.updated_at.isoformat() if settings.updated_at else None,
     }
 
@@ -1031,6 +1039,8 @@ async def admin_update_settings(
         "site_name", "logo_url", "favicon_url",
         "seo_title", "seo_description", "seo_keywords",
         "seo_og_title", "seo_og_description", "seo_og_image", "seo_canonical",
+        "gtm_id", "ga4_id", "gsc_verification", "yandex_verification",
+        "yandex_metrica_id", "facebook_pixel_id", "tiktok_pixel_id", "hotjar_id",
     ]
     for field in allowed:
         if field in data:
@@ -1053,5 +1063,13 @@ async def admin_update_settings(
         "seo_og_description": settings.seo_og_description,
         "seo_og_image": settings.seo_og_image,
         "seo_canonical": settings.seo_canonical,
+        "gtm_id": settings.gtm_id,
+        "ga4_id": settings.ga4_id,
+        "gsc_verification": settings.gsc_verification,
+        "yandex_verification": settings.yandex_verification,
+        "yandex_metrica_id": settings.yandex_metrica_id,
+        "facebook_pixel_id": settings.facebook_pixel_id,
+        "tiktok_pixel_id": settings.tiktok_pixel_id,
+        "hotjar_id": settings.hotjar_id,
         "updated_at": settings.updated_at.isoformat() if settings.updated_at else None,
     }

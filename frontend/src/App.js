@@ -32,6 +32,7 @@ import KargoBilgisiPage from './pages/KargoBilgisiPage';
 import GizlilikPolitikasiPage from './pages/GizlilikPolitikasiPage';
 import KVKKPage from './pages/KVKKPage';
 import CookieBanner from './components/CookieBanner';
+import TrackingScripts from './components/TrackingScripts';
 import './App.css';
 
 function App() {
@@ -83,6 +84,7 @@ function App() {
           <WhatsAppButton />
           <PWAInstallBanner />
           <CookieBanner />
+          <TrackingScripts />
           <Toaster richColors position="top-right" closeButton />
           </SettingsProvider>
           </BrandsProvider>

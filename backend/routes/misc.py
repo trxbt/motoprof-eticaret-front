@@ -150,5 +150,13 @@ async def get_public_settings(session: AsyncSession = Depends(get_db)):
         "seo_og_description": settings.seo_og_description or settings.seo_description,
         "seo_og_image": settings.seo_og_image,
         "seo_canonical": settings.seo_canonical,
+        "gtm_id": settings.gtm_id,
+        "ga4_id": settings.ga4_id,
+        "gsc_verification": settings.gsc_verification,
+        "yandex_verification": settings.yandex_verification,
+        "yandex_metrica_id": settings.yandex_metrica_id,
+        "facebook_pixel_id": settings.facebook_pixel_id,
+        "tiktok_pixel_id": settings.tiktok_pixel_id,
+        "hotjar_id": settings.hotjar_id,
         "updated_at": settings.updated_at.isoformat() if settings.updated_at else None,
     }
