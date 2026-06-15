@@ -208,7 +208,22 @@ class SiteSettings(Base):
     facebook_pixel_id:   Mapped[Optional[str]] = mapped_column(String(50))
     tiktok_pixel_id:     Mapped[Optional[str]] = mapped_column(String(50))
     hotjar_id:           Mapped[Optional[str]] = mapped_column(String(50))
-    updated_at:       Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+    # İletişim
+    contact_phone:           Mapped[Optional[str]] = mapped_column(String(50))
+    contact_email:           Mapped[Optional[str]] = mapped_column(String(200))
+    contact_address:         Mapped[Optional[str]] = mapped_column(Text)
+    contact_city:            Mapped[Optional[str]] = mapped_column(String(200))
+    working_hours:           Mapped[Optional[str]] = mapped_column(String(100))
+    working_hours_weekend:   Mapped[Optional[str]] = mapped_column(String(100))
+    # Sosyal medya
+    social_instagram: Mapped[Optional[str]] = mapped_column(String(500))
+    social_facebook:  Mapped[Optional[str]] = mapped_column(String(500))
+    social_twitter:   Mapped[Optional[str]] = mapped_column(String(500))
+    social_youtube:   Mapped[Optional[str]] = mapped_column(String(500))
+    social_tiktok:    Mapped[Optional[str]] = mapped_column(String(500))
+    social_whatsapp:  Mapped[Optional[str]] = mapped_column(String(50))
+    social_linkedin:  Mapped[Optional[str]] = mapped_column(String(500))
+    updated_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
 
 class Invoice(Base):

@@ -7,6 +7,18 @@ import { useSettings } from '../contexts/SettingsContext';
 const Footer = () => {
   const { brands: BRANDS } = useBrands();
   const { settings } = useSettings();
+
+  // Sosyal medya linkleri — sadece dolu olanları göster
+  const socials = [
+    { icon: Instagram, label: 'Instagram', url: settings.social_instagram },
+    { icon: Facebook,  label: 'Facebook',  url: settings.social_facebook  },
+    { icon: Youtube,   label: 'YouTube',   url: settings.social_youtube   },
+  ].filter(s => s.url);
+
+  const phone   = settings.contact_phone   || '+90 (212) 000 00 00';
+  const email   = settings.contact_email   || 'info@motoprof.com.tr';
+  const address = settings.contact_city    || 'İstanbul, Türkiye';
+  const hours   = settings.working_hours   || 'Pzt – Cum  /  09:00 – 18:00';
   return (
     <footer className="bg-[#050505] border-t border-white/5 mt-16">
       {/* Top CTA strip */}
@@ -21,10 +33,10 @@ const Footer = () => {
               <p className="text-neutral-600 text-xs">Teknik ekibimize ulaşın, birlikte bulalım.</p>
             </div>
           </div>
-          <a href="tel:+902120000000"
+          <a href={`tel:${phone.replace(/\s/g,'')}`}
             className="flex items-center gap-2 px-5 py-2.5 bg-[#111111] hover:bg-[#1a1a1a] border border-white/6 hover:border-orange-500/20 text-white text-xs font-bold rounded-xl transition-all uppercase tracking-wider whitespace-nowrap">
             <Phone size={13} className="text-orange-500" />
-            +90 (212) 000 00 00
+            {phone}
           </a>
         </div>
       </div>
@@ -54,13 +66,18 @@ const Footer = () => {
               Türkiye'nin güvenilir motosiklet yedek parça platformu.
             </p>
             <div className="flex items-center gap-2">
-              {[
+              {socials.length > 0 ? socials.map(({ icon: Icon, label, url }) => (
+                <a key={label} href={url} target="_blank" rel="noopener noreferrer" aria-label={label}
+                  className="w-8 h-8 bg-[#111111] hover:bg-orange-500 border border-white/6 hover:border-orange-500 text-neutral-600 hover:text-white rounded-lg flex items-center justify-center transition-all duration-200">
+                  <Icon size={14} />
+                </a>
+              )) : [
                 { icon: Instagram, label: 'Instagram' },
-                { icon: Facebook, label: 'Facebook' },
-                { icon: Youtube, label: 'YouTube' },
+                { icon: Facebook,  label: 'Facebook'  },
+                { icon: Youtube,   label: 'YouTube'   },
               ].map(({ icon: Icon, label }) => (
                 <a key={label} href="#" aria-label={label}
-                  className="w-8 h-8 bg-[#111111] hover:bg-orange-500 border border-white/6 hover:border-orange-500 text-neutral-600 hover:text-white rounded-lg flex items-center justify-center transition-all duration-200">
+                  className="w-8 h-8 bg-[#111111] border border-white/6 text-neutral-700 rounded-lg flex items-center justify-center">
                   <Icon size={14} />
                 </a>
               ))}
@@ -115,20 +132,25 @@ const Footer = () => {
           <div>
             <h3 className="text-[10px] font-black uppercase tracking-[0.25em] text-neutral-600 mb-5">İletişim</h3>
             <ul className="space-y-3">
-              {[
-                { icon: Phone, text: '+90 (212) 000 00 00' },
-                { icon: Mail, text: 'info@motoprof.com.tr' },
-                { icon: MapPin, text: 'İstanbul, Türkiye' },
-              ].map(({ icon: Icon, text }) => (
-                <li key={text} className="flex items-start gap-3">
-                  <Icon size={13} className="text-orange-500 mt-0.5 flex-shrink-0" />
-                  <span className="text-xs text-neutral-500">{text}</span>
-                </li>
-              ))}
+              <li className="flex items-start gap-3">
+                <Phone size={13} className="text-orange-500 mt-0.5 flex-shrink-0" />
+                <a href={`tel:${phone.replace(/\s/g,'')}`} className="text-xs text-neutral-500 hover:text-white transition-colors">{phone}</a>
+              </li>
+              <li className="flex items-start gap-3">
+                <Mail size={13} className="text-orange-500 mt-0.5 flex-shrink-0" />
+                <a href={`mailto:${email}`} className="text-xs text-neutral-500 hover:text-white transition-colors">{email}</a>
+              </li>
+              <li className="flex items-start gap-3">
+                <MapPin size={13} className="text-orange-500 mt-0.5 flex-shrink-0" />
+                <span className="text-xs text-neutral-500">{address}</span>
+              </li>
             </ul>
             <div className="mt-5 p-3.5 bg-[#0d0d0d] rounded-xl border border-white/4">
               <p className="text-[10px] text-neutral-600 uppercase tracking-wider mb-0.5">Çalışma Saatleri</p>
-              <p className="text-sm font-bold text-white">Pzt – Cum  /  09:00 – 18:00</p>
+              <p className="text-sm font-bold text-white">{hours}</p>
+              {settings.working_hours_weekend && (
+                <p className="text-xs text-neutral-600 mt-0.5">Hafta sonu: {settings.working_hours_weekend}</p>
+              )}
             </div>
           </div>
         </div>
