@@ -16,6 +16,7 @@ from routes import (
     wishlist_router, coupons_router, misc_router,
     payments_router, addresses_router, admin_router,
 )
+from routes.cart_tracking import router as cart_tracking_router
 
 app = FastAPI(title="MotoProf API", version="2.1.0")
 
@@ -42,7 +43,8 @@ app.include_router(coupons_router,   prefix="/api")
 app.include_router(misc_router,      prefix="/api")
 app.include_router(payments_router,  prefix="/api")
 app.include_router(addresses_router, prefix="/api")
-app.include_router(admin_router,     prefix="/api/admin")
+app.include_router(admin_router,         prefix="/api/admin")
+app.include_router(cart_tracking_router, prefix="/api")
 
 
 @app.on_event("startup")

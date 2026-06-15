@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from './AuthContext';
+import { trackCart } from '../lib/cartTracker';
 
 const CartContext = createContext(null);
 const CART_KEY = 'motoprof_cart';
@@ -53,10 +54,12 @@ export const CartProvider = ({ children }) => {
 
   useEffect(() => {
     localStorage.setItem(CART_KEY, JSON.stringify(items));
+    // Terk edilmiş sepet takibi
+    trackCart(items, user);
     if (user && isMerged) {
         const timer = setTimeout(() => {
             axios.post(`${API}/auth/cart`, { cart_data: items }, { withCredentials: true }).catch(() => {});
-        }, 500); // Debounce to avoid too many requests
+        }, 500);
         return () => clearTimeout(timer);
     }
   }, [items, user, isMerged]);

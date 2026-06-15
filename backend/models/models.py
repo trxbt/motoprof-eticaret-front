@@ -226,6 +226,24 @@ class SiteSettings(Base):
     updated_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
 
+class Cart(Base):
+    __tablename__ = "carts"
+    id                  = mapped_column(PGUUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    session_id:         Mapped[str]            = mapped_column(String(100), nullable=False, index=True)
+    user_id:            Mapped[Optional[uuid.UUID]] = mapped_column(PGUUID(as_uuid=True), nullable=True)
+    email:              Mapped[Optional[str]]  = mapped_column(String(255))
+    phone:              Mapped[Optional[str]]  = mapped_column(String(50))
+    name:               Mapped[Optional[str]]  = mapped_column(String(200))
+    items:              Mapped[Optional[dict]] = mapped_column(JSONB)
+    subtotal:           Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    status:             Mapped[str]            = mapped_column(String(20), default="active")
+    converted_order_id: Mapped[Optional[uuid.UUID]] = mapped_column(PGUUID(as_uuid=True), nullable=True)
+    reminder_1_sent_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    reminder_2_sent_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    last_activity_at:   Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    created_at:         Mapped[datetime]       = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+
 class Invoice(Base):
     __tablename__ = "invoices"
     id:               Mapped[uuid.UUID]     = mapped_column(PGUUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
