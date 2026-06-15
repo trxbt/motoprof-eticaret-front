@@ -21,7 +21,7 @@ IYZICO_OPTIONS = {
     "secret_key": os.environ.get("IYZICO_SECRET_KEY"),
     "base_url":   os.environ.get("IYZICO_BASE_URL", "sandbox-api.iyzipay.com"),
 }
-FRONTEND_URL = os.environ.get("FRONTEND_URL", "https://motoprof-preview.preview.emergentagent.com")
+FRONTEND_URL = os.environ.get("FRONTEND_URL", "https://dropdown-speed.preview.emergentagent.com")
 
 
 # ─── Sync wrappers (iyzipay is sync) ─────────────────────────────────────────

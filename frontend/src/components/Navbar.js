@@ -40,7 +40,22 @@ const Navbar = () => {
   const [scrollProgress, setScrollProgress] = useState(0);
   const [expandedBrand, setExpandedBrand] = useState(null);
   const searchInputRef = useRef(null);
+  const dropdownCloseTimer = useRef(null);
   const debouncedQuery = useDebounce(searchQuery, 260);
+
+  const handleDropdownEnter = (brandId) => {
+    if (dropdownCloseTimer.current) {
+      clearTimeout(dropdownCloseTimer.current);
+      dropdownCloseTimer.current = null;
+    }
+    setOpenDropdown(brandId);
+  };
+
+  const handleDropdownLeave = () => {
+    dropdownCloseTimer.current = setTimeout(() => {
+      setOpenDropdown(null);
+    }, 150);
+  };
 
   useEffect(() => {
     const onScroll = () => {
@@ -51,6 +66,13 @@ const Navbar = () => {
     };
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  // Cleanup dropdown timer on unmount
+  useEffect(() => {
+    return () => {
+      if (dropdownCloseTimer.current) clearTimeout(dropdownCloseTimer.current);
+    };
   }, []);
 
   useEffect(() => {
@@ -153,26 +175,32 @@ const Navbar = () => {
             {/* Desktop Nav */}
             <div className="hidden lg:flex items-center gap-0.5">
               {BRANDS.map(brand => (
-                <div key={brand.id} className="relative group"
-                  onMouseEnter={() => setOpenDropdown(brand.id)}
-                  onMouseLeave={() => setOpenDropdown(null)}>
+                <div key={brand.id} className="relative"
+                  onMouseEnter={() => handleDropdownEnter(brand.id)}
+                  onMouseLeave={handleDropdownLeave}>
                   <Link to={`/urunler/${brand.slug}`}
                     className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-neutral-400 hover:text-white transition-colors rounded-lg hover:bg-white/4 uppercase tracking-wider">
                     {brand.name}
                     <ChevronDown size={11} className={`transition-transform duration-200 ${openDropdown === brand.id ? 'rotate-180 text-orange-400' : ''}`} />
                   </Link>
                   {openDropdown === brand.id && (
-                    <div className="absolute top-full left-0 mt-2 bg-[#111111] border border-white/8 rounded-xl p-2 min-w-56 shadow-2xl shadow-black/60 z-50 animate-fade-in">
-                      <div className="px-3 py-1.5 mb-1">
-                        <span className="text-[9px] font-bold uppercase tracking-widest text-neutral-600">{brand.name} Modelleri</span>
+                    <div
+                      className="absolute top-full left-0 z-50 pt-2"
+                      onMouseEnter={() => handleDropdownEnter(brand.id)}
+                      onMouseLeave={handleDropdownLeave}
+                    >
+                      <div className="bg-[#111111] border border-white/8 rounded-xl p-2 min-w-56 shadow-2xl shadow-black/60 animate-fade-in">
+                        <div className="px-3 py-1.5 mb-1">
+                          <span className="text-[9px] font-bold uppercase tracking-widest text-neutral-600">{brand.name} Modelleri</span>
+                        </div>
+                        {brand.models.map(model => (
+                          <Link key={model.id} to={`/urunler/${brand.slug}/${model.slug}`}
+                            className="flex items-center justify-between px-3 py-2 text-xs text-neutral-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors group/item">
+                            <span>{model.full_name}</span>
+                            <ChevronDown size={11} className="rotate-[-90deg] text-neutral-700 group-hover/item:text-orange-500 transition-colors" />
+                          </Link>
+                        ))}
                       </div>
-                      {brand.models.map(model => (
-                        <Link key={model.id} to={`/urunler/${brand.slug}/${model.slug}`}
-                          className="flex items-center justify-between px-3 py-2 text-xs text-neutral-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors group/item">
-                          <span>{model.full_name}</span>
-                          <ChevronDown size={11} className="rotate-[-90deg] text-neutral-700 group-hover/item:text-orange-500 transition-colors" />
-                        </Link>
-                      ))}
                     </div>
                   )}
                 </div>
