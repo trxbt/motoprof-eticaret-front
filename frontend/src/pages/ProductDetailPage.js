@@ -281,13 +281,11 @@ const ProductDetailPage = () => {
               {product.stock > 0 ? (
                 <div className="flex flex-col items-center gap-1 bg-green-500/8 border border-green-500/15 text-green-400 text-[10px] font-bold px-3 py-2 rounded-xl text-center">
                   <CheckCircle size={14} />
-                  <span>Stokta</span>
-                  <span>{product.stock} adet</span>
+                  <span>Stokta Var</span>
                 </div>
               ) : (
                 <div className="flex flex-col items-center gap-1 bg-red-500/8 border border-red-500/15 text-red-400 text-[10px] font-bold px-3 py-2 rounded-xl text-center">
-                  <span>Stok</span>
-                  <span>Tükendi</span>
+                  <span>Stokta Yok</span>
                 </div>
               )}
             </div>
