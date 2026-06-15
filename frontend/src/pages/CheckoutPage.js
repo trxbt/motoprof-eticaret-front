@@ -63,7 +63,7 @@ const CheckoutPage = () => {
         })
         .catch(() => {});
     }
-    axios.get(`${API}/misc/banks`).then(({ data }) => setBanks(data)).catch(() => {});
+    axios.get(`${API}/banks`).then(({ data }) => setBanks(data)).catch(() => {});
   }, [user]);
 
   const applyAddress = (addr) => {

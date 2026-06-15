@@ -31,9 +31,8 @@ const HeroSlider = () => {
   const [current, setCurrent] = useState(0);
   const [slides, setSlides] = useState([]);
 
-  // DB'den sliderları çek
   useEffect(() => {
-    axios.get(`${API}/misc/sliders`)
+    axios.get(`${API}/sliders`)
       .then(({ data }) => {
         if (data && data.length > 0) setSlides(data);
         else setSlides(FALLBACK_SLIDES);
