@@ -123,9 +123,10 @@ class Category(Base):
 
 class Brand(Base):
     __tablename__ = "brands"
-    id:   Mapped[uuid.UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    name: Mapped[str]       = mapped_column(String(200), nullable=False)
-    slug: Mapped[str]       = mapped_column(String(200), unique=True, nullable=False)
+    id:    Mapped[uuid.UUID]     = mapped_column(PGUUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name:  Mapped[str]           = mapped_column(String(200), nullable=False)
+    slug:  Mapped[str]           = mapped_column(String(200), unique=True, nullable=False)
+    image: Mapped[Optional[str]] = mapped_column(String(1000), nullable=True)
 
 
 class Coupon(Base):

@@ -10,30 +10,36 @@ export const BrandsProvider = ({ children }) => {
   const [brands, setBrands] = useState(STATIC_BRANDS);
 
   useEffect(() => {
-    axios.get(`${API}/motorcycle-models`)
-      .then(({ data }) => {
-        // DB slug matches static model id (e.g. "yamaha-nmax125")
-        const dbMap = {};
-        data.forEach(m => {
-          dbMap[m.slug] = m;
-        });
-
-        const merged = STATIC_BRANDS.map(brand => ({
-          ...brand,
-          models: brand.models.map(model => {
-            const dbModel = dbMap[model.id];
-            if (dbModel && dbModel.image) {
-              return { ...model, image: dbModel.image };
-            }
-            return model;
-          }),
-        }));
-
-        setBrands(merged);
-      })
-      .catch(() => {
-        // Statik verilerle devam et
+    // Hem marka hem model görsellerini paralel olarak çek
+    Promise.all([
+      axios.get(`${API}/admin/brands`).then(r => r.data).catch(() => []),
+      axios.get(`${API}/motorcycle-models`).then(r => r.data).catch(() => []),
+    ]).then(([dbBrands, dbModels]) => {
+      // Marka görselleri için lookup: slug -> image
+      const brandImageMap = {};
+      dbBrands.forEach(b => {
+        if (b.image) brandImageMap[b.slug.toLowerCase()] = b.image;
       });
+
+      // Model görselleri için lookup: slug -> image  (DB slug = statik model id)
+      const modelImageMap = {};
+      dbModels.forEach(m => {
+        if (m.image) modelImageMap[m.slug] = m.image;
+      });
+
+      // Statik verilerle birleştir
+      const merged = STATIC_BRANDS.map(brand => ({
+        ...brand,
+        // DB'den gelen marka görseli varsa override et
+        image: brandImageMap[brand.slug] || brand.image,
+        models: brand.models.map(model => {
+          const dbImage = modelImageMap[model.id]; // statik id = DB slug
+          return dbImage ? { ...model, image: dbImage } : model;
+        }),
+      }));
+
+      setBrands(merged);
+    });
   }, []);
 
   const getBrandBySlug = (slug) => brands.find(b => b.slug === slug);
@@ -54,7 +60,6 @@ export const BrandsProvider = ({ children }) => {
 export const useBrands = () => {
   const ctx = useContext(BrandsContext);
   if (!ctx) {
-    // Context dışında kullanılırsa fallback
     return {
       brands: STATIC_BRANDS,
       getBrandBySlug: (slug) => STATIC_BRANDS.find(b => b.slug === slug),

@@ -696,7 +696,7 @@ async def delete_category(
 @router.get("/brands")
 async def get_brands(session: AsyncSession = Depends(get_db)):
     result = await session.execute(select(Brand).order_by(Brand.name.asc()))
-    return [{"id": str(b.id), "name": b.name, "slug": b.slug} for b in result.scalars().all()]
+    return [{"id": str(b.id), "name": b.name, "slug": b.slug, "image": b.image} for b in result.scalars().all()]
 
 
 @router.post("/brands")
@@ -706,7 +706,7 @@ async def add_brand(
     session: AsyncSession = Depends(get_db)
 ):
     data = await request.json()
-    brand = Brand(name=data["name"], slug=data["slug"])
+    brand = Brand(name=data["name"], slug=data["slug"], image=data.get("image"))
     session.add(brand)
     await session.commit()
     return {"message": "Marka eklendi", "id": str(brand.id)}
@@ -723,6 +723,36 @@ async def delete_brand(
         await session.delete(brand)
         await session.commit()
     return {"message": "Marka silindi"}
+
+
+@router.patch("/brands/{brand_id}")
+async def update_brand(
+    brand_id: str,
+    request: Request,
+    admin_user: User = Depends(get_admin_user),
+    session: AsyncSession = Depends(get_db)
+):
+    """Marka bilgilerini güncelle (isim, slug, görsel)"""
+    data = await request.json()
+    try:
+        brand = await session.get(Brand, uuid.UUID(brand_id))
+    except ValueError:
+        result = await session.execute(select(Brand).where(Brand.slug == brand_id))
+        brand = result.scalar_one_or_none()
+
+    if not brand:
+        raise HTTPException(status_code=404, detail="Marka bulunamadı")
+
+    if "name" in data:
+        brand.name = data["name"]
+    if "slug" in data:
+        brand.slug = data["slug"]
+    if "image" in data:
+        brand.image = data["image"]
+
+    await session.commit()
+    await session.refresh(brand)
+    return {"id": str(brand.id), "name": brand.name, "slug": brand.slug, "image": brand.image}
 
 
 # ─── Banks ────────────────────────────────────────────────────────────────────
