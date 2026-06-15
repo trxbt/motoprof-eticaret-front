@@ -53,7 +53,13 @@ async def startup():
             await conn.execute(text("ALTER TABLE orders ADD COLUMN IF NOT EXISTS iyzico_token VARCHAR(500)"))
             await conn.execute(text("ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_method VARCHAR(50) DEFAULT 'iyzico'"))
             await conn.execute(text("ALTER TABLE orders ADD COLUMN IF NOT EXISTS tracking_number VARCHAR(200)"))
+            await conn.execute(text("ALTER TABLE orders ADD COLUMN IF NOT EXISTS admin_note TEXT"))
+            await conn.execute(text("ALTER TABLE orders ADD COLUMN IF NOT EXISTS error_code VARCHAR(200)"))
+            await conn.execute(text("ALTER TABLE orders ADD COLUMN IF NOT EXISTS error_message TEXT"))
             await conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS cart_data JSONB DEFAULT '[]'::jsonb"))
+            # products: SEO meta kolonları
+            await conn.execute(text("ALTER TABLE products ADD COLUMN IF NOT EXISTS meta_title VARCHAR(500)"))
+            await conn.execute(text("ALTER TABLE products ADD COLUMN IF NOT EXISTS meta_description VARCHAR(1000)"))
             # bank_accounts: eksik kolonlar ve NULL is_active düzeltmesi
             await conn.execute(text("ALTER TABLE bank_accounts ADD COLUMN IF NOT EXISTS branch_name VARCHAR(100)"))
             await conn.execute(text("ALTER TABLE bank_accounts ADD COLUMN IF NOT EXISTS account_number VARCHAR(50)"))

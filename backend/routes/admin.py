@@ -355,7 +355,6 @@ async def update_tracking_number(
     order = result.scalar_one_or_none()
     if not order:
         raise HTTPException(status_code=404, detail="Sipariş bulunamadı")
-    # tracking_number sütunu startup'ta ALTER TABLE ile ekleniyor
     try:
         order.tracking_number = data.get("tracking_number", "")
         # Kargo takip no girilince status'u shipped yap
@@ -365,6 +364,24 @@ async def update_tracking_number(
         pass
     await session.commit()
     return {"message": "Takip numarası güncellendi"}
+
+
+@router.patch("/orders/{order_id}/note")
+async def update_order_note(
+    order_id: uuid.UUID,
+    request: Request,
+    admin_user: User = Depends(get_admin_user),
+    session: AsyncSession = Depends(get_db)
+):
+    """Admin dahili notu güncelle"""
+    data = await request.json()
+    result = await session.execute(select(Order).where(Order.id == order_id))
+    order = result.scalar_one_or_none()
+    if not order:
+        raise HTTPException(status_code=404, detail="Sipariş bulunamadı")
+    order.admin_note = data.get("admin_note", "")
+    await session.commit()
+    return {"message": "Not kaydedildi"}
 
 
 @router.post("/orders/{order_id}/approve-payment")

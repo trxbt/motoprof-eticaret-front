@@ -23,6 +23,8 @@ def product_to_dict(p: Product) -> dict:
         "model_id": p.model_id, "year_range": p.year_range, "category": p.category,
         "stock": p.stock, "sku": p.sku, "oem_kodu": p.oem_kodu,
         "is_featured": p.is_featured,
+        "meta_title": getattr(p, "meta_title", None),
+        "meta_description": getattr(p, "meta_description", None),
         "created_at": p.created_at.isoformat() if p.created_at else None,
     }
 
@@ -36,6 +38,7 @@ def order_to_dict(o: Order) -> dict:
         "status": o.status, "payment_status": o.payment_status,
         "payment_method": getattr(o, "payment_method", "iyzico"),
         "tracking_number": getattr(o, "tracking_number", None),
+        "admin_note": getattr(o, "admin_note", None),
         "invoice": o.invoice, "coupon_code": o.coupon_code,
         "discount": float(o.discount) if o.discount else None,
         "items": [
